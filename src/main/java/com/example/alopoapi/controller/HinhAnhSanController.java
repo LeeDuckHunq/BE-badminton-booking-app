@@ -21,4 +21,13 @@ public class HinhAnhSanController {
         return ResponseEntity.ok(result);
 
     }
+
+    @GetMapping("/anh-san")
+    public ResponseEntity<?> getAllHinhAnhSan(@PathVariable String maCumSan) {
+
+        var result = hinhAnhSanService.getAllAnhSan();
+
+        return ResponseEntity.ok(result);
+
+    }
 }
