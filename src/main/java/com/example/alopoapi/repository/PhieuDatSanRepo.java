@@ -15,4 +15,8 @@ public interface PhieuDatSanRepo extends JpaRepository<PhieuDatSanEntity, String
             LocalDateTime end
     );
 
+    List<PhieuDatSanEntity>
+    findByMaSan(String maSan);
+
+    long count();
 }
