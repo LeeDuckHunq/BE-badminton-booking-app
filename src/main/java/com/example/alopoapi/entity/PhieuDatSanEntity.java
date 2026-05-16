@@ -1,9 +1,6 @@
 package com.example.alopoapi.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -38,6 +35,9 @@ public class PhieuDatSanEntity {
     @Column(name = "ngayLap")
     private LocalDateTime ngayLap;
 
+    @Column(name = "trangThai")
+    private String trangThai;
+
     //region constructor
 
     public PhieuDatSanEntity() {
@@ -45,7 +45,7 @@ public class PhieuDatSanEntity {
 
     public PhieuDatSanEntity(String maPhieuDat, String maNguoiDung, String maSan,
                              LocalDateTime batDau, LocalDateTime ketThuc, double tongTien,
-                             String maKhuyenMai, LocalDateTime ngayLap) {
+                             String maKhuyenMai, LocalDateTime ngayLap, String trangThai) {
         this.maPhieuDat = maPhieuDat;
         this.maNguoiDung = maNguoiDung;
         this.maSan = maSan;
@@ -123,5 +123,12 @@ public class PhieuDatSanEntity {
         this.ngayLap = ngayLap;
     }
 
+    public String getTrangThai() {
+        return trangThai;
+    }
+
+    public void setTrangThai(String trangThai) {
+        this.trangThai = trangThai;
+    }
     //endregion
 }
