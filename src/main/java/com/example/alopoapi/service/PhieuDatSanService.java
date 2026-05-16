@@ -58,6 +58,7 @@ public class PhieuDatSanService {
         newPD.setKetThuc(request.getKetThuc());
         newPD.setNgayLap(LocalDateTime.now());
         newPD.setTongTien(san.get().getGia() * soGio);
+        newPD.setTrangThai("CHO_XAC_NHAN");
 
         phieuDatSanRepo.save(newPD);
 
