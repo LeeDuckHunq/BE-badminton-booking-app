@@ -21,4 +21,11 @@ public class SanController {
         return ResponseEntity.ok(sanService.getSanTheoCum(maCumSan));
 
     }
+
+    @GetMapping("/get-so-luong-san")
+    public ResponseEntity<?> getSoLuongSan() {
+
+        return ResponseEntity.ok(sanService.getSoLuongSan());
+
+    }
 }

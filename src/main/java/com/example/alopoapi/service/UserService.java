@@ -45,8 +45,12 @@ public class UserService {
     }
 
     public boolean register() {
-
-
         return true;
+    }
+
+    public int getSoLuongUser() {
+
+        return (int)userRepo.count();
+
     }
 }

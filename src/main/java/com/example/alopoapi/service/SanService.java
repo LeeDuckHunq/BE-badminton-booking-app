@@ -26,4 +26,10 @@ public class SanService {
 
         return sanList;
     }
+
+    public int getSoLuongSan() {
+
+        return (int)sanRepo.count();
+
+    }
 }
