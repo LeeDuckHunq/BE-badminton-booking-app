@@ -53,7 +53,6 @@ public class PhieuDatSanService {
         newPD.setMaPhieuDat("PD00" + (phieuDatSanRepo.count() + 1));
         newPD.setMaSan(request.getMaSan());
         newPD.setMaNguoiDung(request.getMaNguoiDung());
-        newPD.setMaKhuyenMai(request.getMaKhuyenMai());
         newPD.setBatDau(request.getBatDau());
         newPD.setKetThuc(request.getKetThuc());
         newPD.setNgayLap(LocalDateTime.now());

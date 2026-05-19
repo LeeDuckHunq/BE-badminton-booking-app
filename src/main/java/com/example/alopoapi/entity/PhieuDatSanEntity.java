@@ -29,9 +29,6 @@ public class PhieuDatSanEntity {
     @Column(name = "tongTien")
     private double tongTien;
 
-    @Column(name = "maKhuyenMai")
-    private String maKhuyenMai;
-
     @Column(name = "ngayLap")
     private LocalDateTime ngayLap;
 
@@ -45,14 +42,13 @@ public class PhieuDatSanEntity {
 
     public PhieuDatSanEntity(String maPhieuDat, String maNguoiDung, String maSan,
                              LocalDateTime batDau, LocalDateTime ketThuc, double tongTien,
-                             String maKhuyenMai, LocalDateTime ngayLap, String trangThai) {
+                             LocalDateTime ngayLap, String trangThai) {
         this.maPhieuDat = maPhieuDat;
         this.maNguoiDung = maNguoiDung;
         this.maSan = maSan;
         this.batDau = batDau;
         this.ketThuc = ketThuc;
         this.tongTien = tongTien;
-        this.maKhuyenMai = maKhuyenMai;
         this.ngayLap = ngayLap;
     }
     //endregion
@@ -105,14 +101,6 @@ public class PhieuDatSanEntity {
 
     public void setTongTien(double tongTien) {
         this.tongTien = tongTien;
-    }
-
-    public String getMaKhuyenMai() {
-        return maKhuyenMai;
-    }
-
-    public void setMaKhuyenMai(String maKhuyenMai) {
-        this.maKhuyenMai = maKhuyenMai;
     }
 
     public LocalDateTime getNgayLap() {
