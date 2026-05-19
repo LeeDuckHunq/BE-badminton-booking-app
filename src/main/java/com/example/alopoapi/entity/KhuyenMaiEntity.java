@@ -27,22 +27,18 @@ public class KhuyenMaiEntity {
     @Column(name = "ngayKetThuc")
     private LocalDateTime ngayKetThuc;
 
-    @Column(name = "trangThai")
-    private boolean trangThai;
-
     //region constructor
 
     public KhuyenMaiEntity() {
     }
 
     public KhuyenMaiEntity(String maKhuyenMai, String duongDanAnh, double phanTramGiam,
-                           LocalDateTime ngayBatDau, LocalDateTime ngayKetThuc, boolean trangThai) {
+                           LocalDateTime ngayBatDau, LocalDateTime ngayKetThuc) {
         this.maKhuyenMai = maKhuyenMai;
         this.duongDanAnh = duongDanAnh;
         this.phanTramGiam = phanTramGiam;
         this.ngayBatDau = ngayBatDau;
         this.ngayKetThuc = ngayKetThuc;
-        this.trangThai = trangThai;
     }
     //endregion
 
@@ -86,14 +82,6 @@ public class KhuyenMaiEntity {
 
     public void setNgayKetThuc(LocalDateTime ngayKetThuc) {
         this.ngayKetThuc = ngayKetThuc;
-    }
-
-    public boolean isTrangThai() {
-        return trangThai;
-    }
-
-    public void setTrangThai(boolean trangThai) {
-        this.trangThai = trangThai;
     }
 
     //endregion
