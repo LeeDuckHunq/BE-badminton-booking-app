@@ -15,6 +15,9 @@ public class KhuyenMaiEntity {
     @Column(name = "maKhuyenMai")
     private String maKhuyenMai;
 
+    @Column(name = "tenKhuyenMai")
+    private String tenKhuyenMai;
+
     @Column(name = "duongDanAnh")
     private String duongDanAnh;
 
@@ -32,14 +35,16 @@ public class KhuyenMaiEntity {
     public KhuyenMaiEntity() {
     }
 
-    public KhuyenMaiEntity(String maKhuyenMai, String duongDanAnh, double phanTramGiam,
-                           LocalDateTime ngayBatDau, LocalDateTime ngayKetThuc) {
+    public KhuyenMaiEntity(String maKhuyenMai, String tenKhuyenMai, String duongDanAnh,
+                           double phanTramGiam, LocalDateTime ngayBatDau, LocalDateTime ngayKetThuc) {
         this.maKhuyenMai = maKhuyenMai;
+        this.tenKhuyenMai = tenKhuyenMai;
         this.duongDanAnh = duongDanAnh;
         this.phanTramGiam = phanTramGiam;
         this.ngayBatDau = ngayBatDau;
         this.ngayKetThuc = ngayKetThuc;
     }
+
     //endregion
 
     //region getter - setter
@@ -84,5 +89,12 @@ public class KhuyenMaiEntity {
         this.ngayKetThuc = ngayKetThuc;
     }
 
+    public String getTenKhuyenMai() {
+        return tenKhuyenMai;
+    }
+
+    public void setTenKhuyenMai(String tenKhuyenMai) {
+        this.tenKhuyenMai = tenKhuyenMai;
+    }
     //endregion
 }
