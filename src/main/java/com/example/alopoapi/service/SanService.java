@@ -32,4 +32,14 @@ public class SanService {
         return (int)sanRepo.count();
 
     }
+
+    public SanEntity getSanInfo(String maSan) {
+
+        for (var s : sanRepo.findAll()) {
+            if (s.getMaSan().equals(maSan)) {
+                return s;
+            }
+        }
+        return null;
+    }
 }

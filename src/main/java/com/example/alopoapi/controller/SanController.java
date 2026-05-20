@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class SanController {
 
     @Autowired
-    SanService sanService;
+    private SanService sanService;
 
     @GetMapping("/get-san/{maCumSan}")
     public ResponseEntity<?> getSanTheoCum(@PathVariable String maCumSan) {
@@ -27,5 +27,11 @@ public class SanController {
 
         return ResponseEntity.ok(sanService.getSoLuongSan());
 
+    }
+
+    @GetMapping("/san-info/{maSan}")
+    public ResponseEntity<?> getSanInfo(@PathVariable String maSan) {
+
+        return ResponseEntity.ok(sanService.getSanInfo(maSan));
     }
 }
