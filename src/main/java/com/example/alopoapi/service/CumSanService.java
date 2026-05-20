@@ -27,4 +27,15 @@ public class CumSanService {
 
         return cumSanList;
     }
+
+    public CumSanEntity getCumSanInfo(String maCumSan) {
+
+        for (var cs : cumSanRepo.findAll()) {
+            if (cs.getMaCumSan().equals(maCumSan)) {
+                return cs;
+            }
+        }
+
+        return null;
+    }
 }
