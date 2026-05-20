@@ -26,7 +26,7 @@ public interface PhieuDatSanRepo extends JpaRepository<PhieuDatSanEntity, String
     long count();
 
     @Query("""
-        SELECT new com.example.dto.TopCumSanDTO(
+        SELECT new com.example.alopoapi.dto.TopCumSanDTO(
             s.maCumSan,
             COUNT(p.maPhieuDat)
         )
@@ -34,6 +34,6 @@ public interface PhieuDatSanRepo extends JpaRepository<PhieuDatSanEntity, String
         JOIN SanEntity s ON p.maSan = s.maSan
         GROUP BY s.maCumSan
         ORDER BY COUNT(p.maPhieuDat) DESC
-    """)
+        """)
     List<TopCumSanDTO> findTopCumSan(Pageable pageable);
 }
