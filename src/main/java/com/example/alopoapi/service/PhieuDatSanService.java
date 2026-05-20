@@ -12,6 +12,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -62,5 +63,18 @@ public class PhieuDatSanService {
         phieuDatSanRepo.save(newPD);
 
         return newPD;
+    }
+
+    public List<PhieuDatSanEntity> getPhieuDatForUser(String usernane) {
+
+        List<PhieuDatSanEntity> pdList = new ArrayList<>();
+
+        for (var pd : phieuDatSanRepo.findAll()) {
+            if (pd.getMaNguoiDung().equals(usernane)) {
+                pdList.add(pd);
+            }
+        }
+
+        return pdList;
     }
 }

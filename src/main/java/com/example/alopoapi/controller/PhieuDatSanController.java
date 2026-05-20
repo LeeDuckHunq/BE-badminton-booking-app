@@ -45,4 +45,11 @@ public class PhieuDatSanController {
                         )
         );
     }
+
+    @GetMapping("/get-theo-user/{username}")
+    public ResponseEntity<?> getPhieuDatForUser(@PathVariable String username) {
+
+        return ResponseEntity.ok(phieuDatSanService.getPhieuDatForUser(username));
+
+    }
 }
