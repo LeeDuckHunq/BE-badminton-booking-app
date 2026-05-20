@@ -32,7 +32,6 @@ public class AuthenticationController {
 
             return ResponseEntity.ok(map);
         }
-
         return ResponseEntity.badRequest().body("Fail!");
     }
 
