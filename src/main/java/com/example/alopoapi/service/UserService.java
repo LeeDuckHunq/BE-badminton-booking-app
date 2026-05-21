@@ -1,10 +1,13 @@
 package com.example.alopoapi.service;
 
+import com.example.alopoapi.dto.UserDTO;
 import com.example.alopoapi.entity.UserEntity;
 import com.example.alopoapi.repository.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -59,5 +62,16 @@ public class UserService {
         
         return userRepo.findById(username);
         
+    }
+
+    public List<UserDTO> getAllUser() {
+
+        List<UserDTO> users = new ArrayList<>();
+
+        for (var user : userRepo.findAll()) {
+            users.add(new UserDTO(user.getUsername(), user.getFullName()));
+        }
+
+        return users;
     }
 }

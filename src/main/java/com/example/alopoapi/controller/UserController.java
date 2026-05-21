@@ -26,4 +26,9 @@ public class UserController {
     public ResponseEntity<?> getUserInfo(@PathVariable String username) {
         return ResponseEntity.ok(userService.userInfo(username));
     }
+
+    @GetMapping("/get-all-user")
+    public ResponseEntity<?> getAllUser() {
+        return ResponseEntity.ok(userService.getAllUser());
+    }
 }
