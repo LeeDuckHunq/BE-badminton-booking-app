@@ -1,5 +1,6 @@
 package com.example.alopoapi.entity.chat;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -24,6 +25,10 @@ public class TinNhanEntity {
     @Column(name = "noiDung", columnDefinition = "TEXT")
     private String noiDung;
 
+    @JsonFormat(
+            pattern = "yyyy-MM-dd'T'HH:mm:ss",
+            timezone = "Asia/Ho_Chi_Minh"
+    )
     @Column(name = "thoiGianGui")
     private LocalDateTime thoiGianGui;
 
