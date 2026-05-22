@@ -25,9 +25,12 @@ public class HoaDonService {
 
     public HoaDonEntity getHoaDon(String maPhieuDat) {
 
-        var exist = hoaDonRepo.findById(maPhieuDat);
+        for (var hd : hoaDonRepo.findAll()) {
+            if (hd.getMaPhieuDat().equals(maPhieuDat)) {
+                return hd;
+            }
+        }
 
-        return exist.orElse(null);
-
+        return null;
     }
 }
