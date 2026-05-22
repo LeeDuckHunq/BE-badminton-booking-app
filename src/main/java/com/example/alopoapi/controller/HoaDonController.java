@@ -23,4 +23,12 @@ public class HoaDonController {
 
         return ResponseEntity.ok("Tao thanh cong!");
     }
+
+    @PostMapping("/test-hoadon")
+    public ResponseEntity<?> testHoaDon(
+            @RequestBody HoaDonEntity hoaDon
+    ) {
+
+        return ResponseEntity.ok(hoaDon);
+    }
 }
