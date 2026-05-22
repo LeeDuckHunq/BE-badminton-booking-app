@@ -37,9 +37,12 @@ public class CumSanController {
         return ResponseEntity.ok(thongKeService.getTop10CumSanDatNhieuNhat());
     }
 
+    /*
     @PostMapping("/create-cum-san")
     public ResponseEntity<?> createCumSan(@RequestBody CumSanEntity cumsan) {
 
         return ;
     }
+
+     */
 }
