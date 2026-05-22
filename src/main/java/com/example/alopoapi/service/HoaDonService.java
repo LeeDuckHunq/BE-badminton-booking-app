@@ -11,8 +11,14 @@ public class HoaDonService {
     @Autowired
     private HoaDonRepo hoaDonRepo;
 
-    public boolean addHoaDon(HoaDonEntity hoadon) {
-        hoaDonRepo.save(hoadon);
+    public boolean addHoaDon(HoaDonEntity hoaDon) {
+        System.out.println("Before save: "
+                + hoaDon.getNgayLap());
+
+        hoaDonRepo.save(hoaDon);
+
+        System.out.println("After save: "
+                + hoaDon.getNgayLap());
 
         return true;
     }
