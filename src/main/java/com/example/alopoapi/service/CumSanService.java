@@ -22,7 +22,9 @@ public class CumSanService {
         List<CumSanEntity> ds = cumSanRepo.findAll();
 
         for (int i = 0; i < soLuong; i++) {
-            cumSanList.add(ds.get(i));
+            if (ds.get(i).getTrangThai().equals("ACTIVE")) {
+                cumSanList.add(ds.get(i));
+            }
         }
 
         return cumSanList;
@@ -39,15 +41,38 @@ public class CumSanService {
         return null;
     }
 
-    public List<CumSanEntity> createCumSan(CumSanEntity cumsan) {
+    public void createCumSan(CumSanEntity cumsan) {
 
         var exist = cumSanRepo.findById(cumsan.getMaCumSan());
 
         if (exist.isEmpty()) {
             cumSanRepo.save(cumsan);
-            return cumSanRepo.findAll();
+        }
+    }
+
+    public void editCumSan(CumSanEntity cumsan) {
+
+        var exist = cumSanRepo.findById(cumsan.getMaCumSan());
+
+        if (!exist.isEmpty()) {
+            cumSanRepo.save(cumsan);
+        }
+    }
+
+    public boolean deleteCumSan(String maCumSan) {
+
+        var exist = cumSanRepo.findById(maCumSan);
+
+        if (exist.isPresent()) {
+
+            CumSanEntity cumSan = exist.get();
+            cumSan.setTrangThai("DELETED");
+
+            cumSanRepo.save(cumSan);
+
+            return true;
         }
 
-        return null;
+        return false;
     }
 }

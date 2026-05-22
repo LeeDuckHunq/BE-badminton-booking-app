@@ -32,6 +32,8 @@ public class CumSanEntity {
     @Column(name = "gioDongCua")
     private LocalTime gioDongCua;
 
+    @Column(name = "trangThai")
+    private String trangThai;
     //region constructor
 
     public CumSanEntity() {
@@ -46,6 +48,7 @@ public class CumSanEntity {
         this.sDT = sDT;
         this.gioMoCua = gioMoCua;
         this.gioDongCua = gioDongCua;
+        this.trangThai = "ACTIVE";
     }
     //endregion
 
@@ -107,5 +110,12 @@ public class CumSanEntity {
         this.gioDongCua = gioDongCua;
     }
 
+    public String getTrangThai() {
+        return trangThai;
+    }
+
+    public void setTrangThai(String trangThai) {
+        this.trangThai = trangThai;
+    }
     //endregion
 }
