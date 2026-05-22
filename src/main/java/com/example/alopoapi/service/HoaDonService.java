@@ -27,6 +27,7 @@ public class HoaDonService {
 
         var exist = hoaDonRepo.findById(maPhieuDat);
 
-        return exist.get();
+        return exist.orElse(null);
+
     }
 }

@@ -32,6 +32,12 @@ public class HoaDonController {
     @GetMapping("/get-hoa-don/{maPhieuDat}")
     public ResponseEntity<?> getHoaDon(@PathVariable String maPhieuDat) {
 
-        return ResponseEntity.ok(hoaDonService.getHoaDon(maPhieuDat));
+        var result = hoaDonService.getHoaDon(maPhieuDat);
+
+        if (result != null) {
+            return ResponseEntity.ok(result);
+        }
+
+        return ResponseEntity.badRequest().body(null);
     }
 }
