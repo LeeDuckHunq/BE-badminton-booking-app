@@ -42,10 +42,13 @@ public class PhieuDatSanService {
     public PhieuDatSanEntity createPhieuDat(CreatePhieuDatRequest request) {
 
         var san = sanRepo.findById(request.getMaSan());
-        var soGio = Duration.between(
+
+        long minutes = Duration.between(
                 request.getBatDau(),
                 request.getKetThuc()
-        ).toHours();
+        ).toMinutes();
+
+        double soGio = minutes / 60.0;
 
         PhieuDatSanEntity newPD = new PhieuDatSanEntity();
 
@@ -55,7 +58,9 @@ public class PhieuDatSanService {
         newPD.setBatDau(request.getBatDau());
         newPD.setKetThuc(request.getKetThuc());
         newPD.setNgayLap(LocalDateTime.now());
+
         newPD.setTongTien(san.get().getGia() * soGio);
+
         newPD.setTrangThai("CHO_XAC_NHAN");
 
         phieuDatSanRepo.save(newPD);
