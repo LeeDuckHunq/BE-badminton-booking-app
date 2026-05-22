@@ -1,3 +1,4 @@
+/*
 package com.example.alopoapi.security;
 
 import jakarta.servlet.FilterChain;
@@ -67,3 +68,5 @@ public class JwtFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 }
+
+ */
