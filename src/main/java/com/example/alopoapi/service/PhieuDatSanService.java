@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class PhieuDatSanService {
@@ -52,7 +53,7 @@ public class PhieuDatSanService {
 
         PhieuDatSanEntity newPD = new PhieuDatSanEntity();
 
-        newPD.setMaPhieuDat("PD00" + (phieuDatSanRepo.count() + 1));
+        newPD.setMaPhieuDat("PD_" + UUID.randomUUID());
         newPD.setMaSan(request.getMaSan());
         newPD.setMaNguoiDung(request.getMaNguoiDung());
         newPD.setBatDau(request.getBatDau());

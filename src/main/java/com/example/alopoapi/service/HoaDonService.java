@@ -22,4 +22,11 @@ public class HoaDonService {
 
         return true;
     }
+
+    public HoaDonEntity getHoaDon(String maPhieuDat) {
+
+        var exist = hoaDonRepo.findById(maPhieuDat);
+
+        return exist.get();
+    }
 }

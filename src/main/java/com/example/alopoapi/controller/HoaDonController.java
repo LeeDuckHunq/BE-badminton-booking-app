@@ -4,10 +4,7 @@ import com.example.alopoapi.entity.HoaDonEntity;
 import com.example.alopoapi.service.HoaDonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/hoa-don")
@@ -30,5 +27,11 @@ public class HoaDonController {
     ) {
 
         return ResponseEntity.ok(hoaDon);
+    }
+
+    @GetMapping("/get-hoa-don/{maPhieuDat}")
+    public ResponseEntity<?> getHoaDon(@PathVariable String maPhieuDat) {
+
+        return ResponseEntity.ok(hoaDonService.getHoaDon(maPhieuDat));
     }
 }
