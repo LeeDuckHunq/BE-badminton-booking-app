@@ -1,14 +1,12 @@
 package com.example.alopoapi.controller;
 
 import com.example.alopoapi.dto.TopCumSanDTO;
+import com.example.alopoapi.entity.CumSanEntity;
 import com.example.alopoapi.service.CumSanService;
 import com.example.alopoapi.service.ThongKeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -35,8 +33,13 @@ public class CumSanController {
 
     @GetMapping("/top-10-cum-san")
     public ResponseEntity<List<TopCumSanDTO>> getTop10CumSan() {
-        return ResponseEntity.ok(
-                thongKeService.getTop10CumSanDatNhieuNhat()
-        );
+
+        return ResponseEntity.ok(thongKeService.getTop10CumSanDatNhieuNhat());
+    }
+
+    @PostMapping("/create-cum-san")
+    public ResponseEntity<?> createCumSan(@RequestBody CumSanEntity cumsan) {
+
+        return ;
     }
 }

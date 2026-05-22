@@ -1,6 +1,6 @@
 package com.example.alopoapi.controller;
 
-import com.example.alopoapi.dto.NhanKhuyenMaiRequest;
+import com.example.alopoapi.dto.request.NhanKhuyenMaiRequest;
 import com.example.alopoapi.service.KhuyenMaiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

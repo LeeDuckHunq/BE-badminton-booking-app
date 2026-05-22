@@ -1,7 +1,7 @@
 package com.example.alopoapi.service;
 
-import com.example.alopoapi.entity.ChiTietKhuyenMaiEntity;
-import com.example.alopoapi.entity.KhuyenMaiEntity;
+import com.example.alopoapi.entity.voucher.ChiTietKhuyenMaiEntity;
+import com.example.alopoapi.entity.voucher.KhuyenMaiEntity;
 import com.example.alopoapi.repository.ChiTietKhuyenMaiRepo;
 import com.example.alopoapi.repository.KhuyenMaiRepo;
 import org.springframework.beans.factory.annotation.Autowired;

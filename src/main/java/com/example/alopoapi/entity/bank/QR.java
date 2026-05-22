@@ -1,4 +1,4 @@
-package com.example.alopoapi.entity;
+package com.example.alopoapi.entity.bank;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

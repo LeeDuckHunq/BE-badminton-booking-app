@@ -1,8 +1,7 @@
 package com.example.alopoapi.service;
 
-import com.example.alopoapi.dto.CreatePhieuDatRequest;
+import com.example.alopoapi.dto.request.CreatePhieuDatRequest;
 import com.example.alopoapi.entity.PhieuDatSanEntity;
-import com.example.alopoapi.entity.SanEntity;
 import com.example.alopoapi.repository.PhieuDatSanRepo;
 import com.example.alopoapi.repository.SanRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +12,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Service

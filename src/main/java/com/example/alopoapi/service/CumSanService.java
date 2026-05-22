@@ -38,4 +38,16 @@ public class CumSanService {
 
         return null;
     }
+
+    public List<CumSanEntity> createCumSan(CumSanEntity cumsan) {
+
+        var exist = cumSanRepo.findById(cumsan.getMaCumSan());
+
+        if (exist.isEmpty()) {
+            cumSanRepo.save(cumsan);
+            return cumSanRepo.findAll();
+        }
+
+        return null;
+    }
 }

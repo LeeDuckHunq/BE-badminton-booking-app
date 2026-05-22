@@ -1,6 +1,6 @@
 package com.example.alopoapi.controller;
 
-import com.example.alopoapi.dto.ChatRoomRequestDTO;
+import com.example.alopoapi.dto.request.ChatRoomRequestDTO;
 import com.example.alopoapi.dto.SendMessageDTO;
 import com.example.alopoapi.entity.chat.TinNhanEntity;
 import com.example.alopoapi.service.ChatService;

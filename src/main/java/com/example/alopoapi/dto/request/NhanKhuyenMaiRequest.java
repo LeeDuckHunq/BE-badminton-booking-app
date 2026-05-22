@@ -1,4 +1,4 @@
-package com.example.alopoapi.dto;
+package com.example.alopoapi.dto.request;
 
 public class NhanKhuyenMaiRequest {
 

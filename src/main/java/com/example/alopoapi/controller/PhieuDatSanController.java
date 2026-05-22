@@ -1,6 +1,6 @@
 package com.example.alopoapi.controller;
 
-import com.example.alopoapi.dto.CreatePhieuDatRequest;
+import com.example.alopoapi.dto.request.CreatePhieuDatRequest;
 import com.example.alopoapi.service.PhieuDatSanService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -50,6 +50,5 @@ public class PhieuDatSanController {
     public ResponseEntity<?> getPhieuDatForUser(@PathVariable String username) {
 
         return ResponseEntity.ok(phieuDatSanService.getPhieuDatForUser(username));
-
     }
 }

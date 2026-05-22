@@ -1,4 +1,4 @@
-package com.example.alopoapi.entity;
+package com.example.alopoapi.entity.voucher;
 
 import jakarta.persistence.*;
 

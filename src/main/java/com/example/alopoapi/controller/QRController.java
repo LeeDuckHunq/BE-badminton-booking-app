@@ -1,6 +1,6 @@
 package com.example.alopoapi.controller;
 
-import com.example.alopoapi.dto.QRResponse;
+import com.example.alopoapi.dto.request.QRResponse;
 import com.example.alopoapi.repository.QRRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
