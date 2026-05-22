@@ -51,4 +51,12 @@ public class PhieuDatSanController {
 
         return ResponseEntity.ok(phieuDatSanService.getPhieuDatForUser(username));
     }
+
+    @DeleteMapping("/delete-phieu-dat/{maPhieuDat}")
+    public ResponseEntity<?> deletePhieuDat(@PathVariable String maPhieuDat) {
+
+        phieuDatSanService.deletePhieuDat(maPhieuDat);
+
+        return ResponseEntity.ok("Successful");
+    }
 }

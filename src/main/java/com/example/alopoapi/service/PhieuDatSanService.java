@@ -82,4 +82,8 @@ public class PhieuDatSanService {
         return pdList;
     }
 
+    public void deletePhieuDat(String maPhieuDat) {
+
+        phieuDatSanRepo.deleteById(maPhieuDat);
+    }
 }
