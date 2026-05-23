@@ -47,10 +47,10 @@ public class FavoriteController {
     @GetMapping("/kiem-tra")
     public ResponseEntity<Boolean> kiemTra(
             @RequestParam String maNguoiDung,
-            @RequestParam String maSan) {
+            @RequestParam String maCumSan) {
         List<FavoriteEntity> favList = favoriteService.getUserFavorites(maNguoiDung);
         boolean isFav = favList.stream()
-                .anyMatch(f -> f.getMaCumSan().equals(maSan));
+                .anyMatch(f -> f.getMaCumSan().equals(maCumSan));
         return ResponseEntity.ok(isFav);
     }
 }

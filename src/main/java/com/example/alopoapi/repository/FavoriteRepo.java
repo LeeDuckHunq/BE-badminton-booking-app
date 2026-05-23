@@ -10,5 +10,5 @@ import java.util.List;
 public interface FavoriteRepo extends JpaRepository<FavoriteEntity, String> {
     List<FavoriteEntity> findAllByMaNguoiDung(String maNguoiDung);
 
-    boolean existsByMaNguoiDungAndMaSan(String maNguoiDung, String maCumSan);
+    boolean existsByMaNguoiDungAndMaCumSan(String maNguoiDung, String maCumSan);
 }
