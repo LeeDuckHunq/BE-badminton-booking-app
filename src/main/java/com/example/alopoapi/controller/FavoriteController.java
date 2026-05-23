@@ -50,7 +50,7 @@ public class FavoriteController {
             @RequestParam String maSan) {
         List<FavoriteEntity> favList = favoriteService.getUserFavorites(maNguoiDung);
         boolean isFav = favList.stream()
-                .anyMatch(f -> f.getMaSan().equals(maSan));
+                .anyMatch(f -> f.getMaCumSan().equals(maSan));
         return ResponseEntity.ok(isFav);
     }
 }
