@@ -1,6 +1,7 @@
 package com.example.alopoapi.entity;
 
 import jakarta.persistence.*;
+import jakarta.transaction.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -8,6 +9,7 @@ import java.util.Date;
 
 @Entity
 @Table(name = "PhieuDatSan")
+@Transactional
 public class PhieuDatSanEntity {
 
     @Id
@@ -119,4 +121,5 @@ public class PhieuDatSanEntity {
         this.trangThai = trangThai;
     }
     //endregion
+
 }

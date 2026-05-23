@@ -4,8 +4,11 @@ import com.example.alopoapi.dto.request.CreatePhieuDatRequest;
 import com.example.alopoapi.entity.PhieuDatSanEntity;
 import com.example.alopoapi.repository.PhieuDatSanRepo;
 import com.example.alopoapi.repository.SanRepo;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -40,9 +43,32 @@ public class PhieuDatSanService {
                 );
     }
 
-    public PhieuDatSanEntity createPhieuDat(CreatePhieuDatRequest request) {
+    @Transactional
+    public PhieuDatSanEntity createPhieuDat(
+            CreatePhieuDatRequest request
+    ) {
 
-        var san = sanRepo.findById(request.getMaSan());
+        var san = sanRepo.findByIdForUpdate(
+                request.getMaSan()
+        ).orElseThrow(() ->
+                new RuntimeException(
+                        "Không tìm thấy sân"
+                )
+        );
+
+        boolean isConflict =
+                phieuDatSanRepo.existsConflict(
+                        request.getMaSan(),
+                        request.getBatDau(),
+                        request.getKetThuc()
+                );
+
+        if (isConflict) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Khung giờ này vừa được đặt"
+            );
+        }
 
         long minutes = Duration.between(
                 request.getBatDau(),
@@ -51,22 +77,42 @@ public class PhieuDatSanService {
 
         double soGio = minutes / 60.0;
 
-        PhieuDatSanEntity newPD = new PhieuDatSanEntity();
+        PhieuDatSanEntity newPD =
+                new PhieuDatSanEntity();
 
-        newPD.setMaPhieuDat("PD_" + UUID.randomUUID());
-        newPD.setMaSan(request.getMaSan());
-        newPD.setMaNguoiDung(request.getMaNguoiDung());
-        newPD.setBatDau(request.getBatDau());
-        newPD.setKetThuc(request.getKetThuc());
-        newPD.setNgayLap(LocalDateTime.now());
+        newPD.setMaPhieuDat(
+                "PD_" + UUID.randomUUID()
+        );
 
-        newPD.setTongTien(san.get().getGia() * soGio);
+        newPD.setMaSan(
+                request.getMaSan()
+        );
 
-        newPD.setTrangThai("CHO_XAC_NHAN");
+        newPD.setMaNguoiDung(
+                request.getMaNguoiDung()
+        );
 
-        phieuDatSanRepo.save(newPD);
+        newPD.setBatDau(
+                request.getBatDau()
+        );
 
-        return newPD;
+        newPD.setKetThuc(
+                request.getKetThuc()
+        );
+
+        newPD.setNgayLap(
+                LocalDateTime.now()
+        );
+
+        newPD.setTongTien(
+                san.getGia() * soGio
+        );
+
+        newPD.setTrangThai(
+                "CHO_XAC_NHAN"
+        );
+
+        return phieuDatSanRepo.save(newPD);
     }
 
     public List<PhieuDatSanEntity> getPhieuDatForUser(String usernane) {
