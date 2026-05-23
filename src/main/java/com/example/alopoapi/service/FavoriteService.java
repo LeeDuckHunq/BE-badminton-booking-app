@@ -15,7 +15,7 @@ public class FavoriteService {
     private FavoriteRepo favoriteRepo;
 
     public void addFavForUser(FavoriteEntity fav) {
-        if (favoriteRepo.existsByMaNguoiDungAndMaSan(fav.getMaNguoiDung(), fav.getMaSan())) {
+        if (favoriteRepo.existsByMaNguoiDungAndMaSan(fav.getMaNguoiDung(), fav.getMaCumSan())) {
             throw new RuntimeException("Sân này đã có trong yêu thích");
         }
         favoriteRepo.save(fav);

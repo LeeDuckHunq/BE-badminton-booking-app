@@ -16,18 +16,18 @@ public class FavoriteEntity {
     @Column(name = "maNguoiDung")
     private String maNguoiDung;
 
-    @Column(name = "maSan")
-    private String maSan;
+    @Column(name = "maCumSan")
+    private String maCumSan;
 
     //region constructor
 
     public FavoriteEntity() {
     }
 
-    public FavoriteEntity(String maFav, String maNguoiDung, String maSan) {
+    public FavoriteEntity(String maFav, String maNguoiDung, String maCumSan) {
         this.maFav = maFav;
         this.maNguoiDung = maNguoiDung;
-        this.maSan = maSan;
+        this.maCumSan = maCumSan;
     }
     //endregion
 
@@ -49,12 +49,12 @@ public class FavoriteEntity {
         this.maNguoiDung = maNguoiDung;
     }
 
-    public String getMaSan() {
-        return maSan;
+    public String getMaCumSan() {
+        return maCumSan;
     }
 
-    public void setMaSan(String maSan) {
-        this.maSan = maSan;
+    public void setMaCumSan(String maCumSan) {
+        this.maCumSan = maCumSan;
     }
 
     //endregion
