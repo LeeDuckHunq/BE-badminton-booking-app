@@ -31,6 +31,9 @@ public class CumSanEntity {
 
     @Field("trangThai")
     private String trangThai;
+
+    @Field("ownerUsername")
+    private String ownerUsername;
     //region constructor
 
     public CumSanEntity() {
@@ -113,6 +116,14 @@ public class CumSanEntity {
 
     public void setTrangThai(String trangThai) {
         this.trangThai = trangThai;
+    }
+
+    public String getOwnerUsername() {
+        return ownerUsername;
+    }
+
+    public void setOwnerUsername(String ownerUsername) {
+        this.ownerUsername = ownerUsername;
     }
     //endregion
 }

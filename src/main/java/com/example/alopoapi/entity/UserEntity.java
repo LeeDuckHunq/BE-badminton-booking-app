@@ -1,5 +1,6 @@
 package com.example.alopoapi.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -12,6 +13,7 @@ public class UserEntity {
     private String username;
 
     @Field("password")
+    @JsonIgnore
     private String password;
 
     @Field("role")
@@ -25,6 +27,9 @@ public class UserEntity {
 
     @Field("phone_number")
     private String phoneNumber;
+
+    @Field("active")
+    private Boolean active;
     //endregion
 
     //region constructor
@@ -40,6 +45,7 @@ public class UserEntity {
         this.fullName = fullName;
         this.email = email;
         this.phoneNumber = phoneNumber;
+        this.active = true;
     }
     //endregion
 
@@ -91,6 +97,14 @@ public class UserEntity {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public boolean isActive() {
+        return active == null || active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
     }
 
     //endregion
