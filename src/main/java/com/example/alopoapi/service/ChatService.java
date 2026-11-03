@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class ChatService {
@@ -30,11 +32,19 @@ public class ChatService {
             ChatRoomRequestDTO request
     ) {
 
-        String room =
-                tvRepo.findPrivateRoom(
-                        request.getUsername1(),
-                        request.getUsername2()
-                );
+        Set<String> roomsOfFirstUser = tvRepo
+                .findByUsername(request.getUsername1())
+                .stream()
+                .map(ThanhVienPhongChatEntity::getMaPhongChat)
+                .collect(Collectors.toSet());
+
+        String room = tvRepo
+                .findByUsername(request.getUsername2())
+                .stream()
+                .map(ThanhVienPhongChatEntity::getMaPhongChat)
+                .filter(roomsOfFirstUser::contains)
+                .findFirst()
+                .orElse(null);
 
         if (room != null) {
             return room;

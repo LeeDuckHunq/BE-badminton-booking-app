@@ -1,32 +1,29 @@
 package com.example.alopoapi.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
-@Entity
-@Table(name = "users")
+@Document(collection = "users")
 public class UserEntity {
 
     //region declare
     @Id
-    @Column(name = "username")
     private String username;
 
-    @Column(name = "password")
+    @Field("password")
     private String password;
 
-    @Column(name = "role")
+    @Field("role")
     private String role;
 
-    @Column(name = "full_name")
+    @Field("full_name")
     private String fullName;
 
-    @Column(name = "email")
+    @Field("email")
     private String email;
 
-    @Column(name = "phone_number")
+    @Field("phone_number")
     private String phoneNumber;
     //endregion
 

@@ -1,20 +1,19 @@
 package com.example.alopoapi.entity.voucher;
 
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
-@Entity
-@Table(name = "ChiTietKhuyenMai")
+@Document(collection = "ChiTietKhuyenMai")
 public class ChiTietKhuyenMaiEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private int id;
+    private String id;
 
-    @Column(name = "maKM")
+    @Field("maKM")
     private String maKM;
 
-    @Column(name = "maNguoiDung")
+    @Field("maNguoiDung")
     private String maNguoiDung;
 
     //region constructor
@@ -22,7 +21,7 @@ public class ChiTietKhuyenMaiEntity {
     public ChiTietKhuyenMaiEntity() {
     }
 
-    public ChiTietKhuyenMaiEntity(int id, String maKM, String maNguoiDung) {
+    public ChiTietKhuyenMaiEntity(String id, String maKM, String maNguoiDung) {
         this.id = id;
         this.maKM = maKM;
         this.maNguoiDung = maNguoiDung;
@@ -48,11 +47,11 @@ public class ChiTietKhuyenMaiEntity {
         this.maNguoiDung = maNguoiDung;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 

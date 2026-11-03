@@ -1,7 +1,7 @@
 package com.example.alopoapi.repository;
 
 import com.example.alopoapi.entity.bank.QR;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
-public interface QRRepo extends JpaRepository<QR, String> {
+public interface QRRepo extends MongoRepository<QR, String> {
 }

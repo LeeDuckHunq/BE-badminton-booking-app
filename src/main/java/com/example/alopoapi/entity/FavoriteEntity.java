@@ -1,22 +1,19 @@
 package com.example.alopoapi.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
-@Entity
-@Table(name = "Favorite")
+@Document(collection = "Favorite")
 public class FavoriteEntity {
 
     @Id
-    @Column(name = "maFav")
     private String maFav;
 
-    @Column(name = "maNguoiDung")
+    @Field("maNguoiDung")
     private String maNguoiDung;
 
-    @Column(name = "maCumSan")
+    @Field("maCumSan")
     private String maCumSan;
 
     //region constructor

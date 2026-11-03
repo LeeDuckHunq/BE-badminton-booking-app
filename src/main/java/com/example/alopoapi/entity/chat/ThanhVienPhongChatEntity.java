@@ -1,24 +1,24 @@
 package com.example.alopoapi.entity.chat;
 
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "ThanhVienPhongChat")
+@Document(collection = "ThanhVienPhongChat")
 public class ThanhVienPhongChatEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private String id;
 
-    @Column(name = "maPhongChat", length = 20)
+    @Field("maPhongChat")
     private String maPhongChat;
 
-    @Column(name = "username", length = 50)
+    @Field("username")
     private String username;
 
-    @Column(name = "ngayThamGia")
+    @Field("ngayThamGia")
     private LocalDateTime ngayThamGia;
 
     //region constructor
@@ -26,7 +26,7 @@ public class ThanhVienPhongChatEntity {
     public ThanhVienPhongChatEntity() {
     }
 
-    public ThanhVienPhongChatEntity(Integer id, String maPhongChat,
+    public ThanhVienPhongChatEntity(String id, String maPhongChat,
                                     String username, LocalDateTime ngayThamGia) {
         this.id = id;
         this.maPhongChat = maPhongChat;
@@ -37,11 +37,11 @@ public class ThanhVienPhongChatEntity {
 
     //region getter-setter
 
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
 

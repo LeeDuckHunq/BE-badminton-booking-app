@@ -1,35 +1,32 @@
 package com.example.alopoapi.entity.chat;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "TinNhan")
+@Document(collection = "TinNhan")
 public class TinNhanEntity {
 
     @Id
-    @Column(name = "maTinNhan", length = 20)
     private String maTinNhan;
 
-    @Column(name = "maPhongChat", length = 20)
+    @Field("maPhongChat")
     private String maPhongChat;
 
-    @Column(name = "usernameNguoiGui", length = 50)
+    @Field("usernameNguoiGui")
     private String usernameNguoiGui;
 
-    @Column(name = "noiDung", columnDefinition = "TEXT")
+    @Field("noiDung")
     private String noiDung;
 
     @JsonFormat(
             pattern = "yyyy-MM-dd'T'HH:mm:ss",
             timezone = "Asia/Ho_Chi_Minh"
     )
-    @Column(name = "thoiGianGui")
+    @Field("thoiGianGui")
     private LocalDateTime thoiGianGui;
 
     //region constructor

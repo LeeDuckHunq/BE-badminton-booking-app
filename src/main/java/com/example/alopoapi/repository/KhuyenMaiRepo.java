@@ -1,7 +1,7 @@
 package com.example.alopoapi.repository;
 
 import com.example.alopoapi.entity.voucher.KhuyenMaiEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
-public interface KhuyenMaiRepo extends JpaRepository<KhuyenMaiEntity, String> {
+public interface KhuyenMaiRepo extends MongoRepository<KhuyenMaiEntity, String> {
 }

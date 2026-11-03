@@ -1,9 +1,9 @@
 package com.example.alopoapi.repository;
 
 import com.example.alopoapi.entity.chat.PhongChatEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface PhongChatRepo extends JpaRepository<PhongChatEntity, String> {
+public interface PhongChatRepo extends MongoRepository<PhongChatEntity, String> {
 }

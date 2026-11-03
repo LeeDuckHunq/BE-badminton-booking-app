@@ -1,38 +1,35 @@
 package com.example.alopoapi.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 import java.time.LocalTime;
 
-@Entity
-@Table(name = "CumSan")
+@Document(collection = "CumSan")
 public class CumSanEntity {
 
     @Id
-    @Column(name = "maCumSan")
     private String maCumSan;
 
-    @Column(name = "tenCumSan")
+    @Field("tenCumSan")
     private String tenCumSan;
 
-    @Column(name = "diaChi")
+    @Field("diaChi")
     private String diaChi;
 
-    @Column(name = "moTa")
+    @Field("moTa")
     private String moTa;
 
-    @Column(name = "sDT")
+    @Field("sDT")
     private String sDT;
 
-    @Column(name = "gioMoCua")
+    @Field("gioMoCua")
     private LocalTime gioMoCua;
 
-    @Column(name = "gioDongCua")
+    @Field("gioDongCua")
     private LocalTime gioDongCua;
 
-    @Column(name = "trangThai")
+    @Field("trangThai")
     private String trangThai;
     //region constructor
 

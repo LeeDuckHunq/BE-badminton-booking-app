@@ -1,19 +1,16 @@
 package com.example.alopoapi.entity.bank;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
-@Entity
-@Table(name = "QR")
+@Document(collection = "QR")
 public class QR {
 
     @Id
-    @Column(name = "Receiver")
     private String Receiver;
 
-    @Column(name = "QRcode")
+    @Field("QRcode")
     private String QRcode;
 
     //region constructor

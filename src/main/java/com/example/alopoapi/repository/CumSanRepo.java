@@ -1,7 +1,7 @@
 package com.example.alopoapi.repository;
 
 import com.example.alopoapi.entity.CumSanEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
-public interface CumSanRepo extends JpaRepository<CumSanEntity, String> {
+public interface CumSanRepo extends MongoRepository<CumSanEntity, String> {
 }
