@@ -13,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -154,6 +155,24 @@ public class ManagementService {
         }
         List<String> courtIds = courts(authentication).stream().map(SanEntity::getMaSan).toList();
         return courtIds.isEmpty() ? List.of() : bookingRepo.findByMaSanIn(courtIds);
+    }
+
+    public Map<String, Object> bookingDetail(String id, Authentication authentication) {
+        PhieuDatSanEntity booking = bookingRepo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn đặt"));
+        SanEntity court = requireCourt(booking.getMaSan(), authentication);
+        CumSanEntity venue = cumSanRepo.findById(court.getMaCumSan()).orElse(null);
+        UserEntity customer = userRepo.findByUsernameIgnoreCase(booking.getMaNguoiDung()).orElse(null);
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("booking", booking);
+        result.put("court", court);
+        result.put("venue", venue);
+        result.put("customer", customer);
+        result.put("durationMinutes", booking.getBatDau() != null && booking.getKetThuc() != null
+                ? Duration.between(booking.getBatDau(), booking.getKetThuc()).toMinutes()
+                : 0);
+        return result;
     }
 
     public PhieuDatSanEntity updateBookingStatus(String id, String status, Authentication authentication) {

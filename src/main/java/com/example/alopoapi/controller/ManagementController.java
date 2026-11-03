@@ -79,6 +79,11 @@ public class ManagementController {
         return ResponseEntity.ok(managementService.bookings(authentication));
     }
 
+    @GetMapping("/bookings/{id}")
+    public ResponseEntity<?> bookingDetail(@PathVariable String id, Authentication authentication) {
+        return ResponseEntity.ok(managementService.bookingDetail(id, authentication));
+    }
+
     @PatchMapping("/bookings/{id}/status")
     public ResponseEntity<?> updateBookingStatus(
             @PathVariable String id,
