@@ -5,6 +5,7 @@ import com.example.alopoapi.entity.PhieuDatSanEntity;
 import com.example.alopoapi.entity.SanEntity;
 import com.example.alopoapi.entity.UserEntity;
 import com.example.alopoapi.repository.CumSanRepo;
+import com.example.alopoapi.repository.HoaDonRepo;
 import com.example.alopoapi.repository.PhieuDatSanRepo;
 import com.example.alopoapi.repository.SanRepo;
 import com.example.alopoapi.repository.UserRepo;
@@ -14,7 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -29,12 +32,14 @@ public class ManagementService {
     private final SanRepo sanRepo;
     private final PhieuDatSanRepo bookingRepo;
     private final UserRepo userRepo;
+    private final HoaDonRepo hoaDonRepo;
 
-    public ManagementService(CumSanRepo cumSanRepo, SanRepo sanRepo, PhieuDatSanRepo bookingRepo, UserRepo userRepo) {
+    public ManagementService(CumSanRepo cumSanRepo, SanRepo sanRepo, PhieuDatSanRepo bookingRepo, UserRepo userRepo, HoaDonRepo hoaDonRepo) {
         this.cumSanRepo = cumSanRepo;
         this.sanRepo = sanRepo;
         this.bookingRepo = bookingRepo;
         this.userRepo = userRepo;
+        this.hoaDonRepo = hoaDonRepo;
     }
 
     public Map<String, Object> currentUser(Authentication authentication) {
@@ -73,6 +78,7 @@ public class ManagementService {
             result.put("userCount", userRepo.count());
             result.put("ownerCount", userRepo.findAll().stream().filter(user -> "ROLE_OWNER".equals(normalizeRole(user.getRole()))).count());
         }
+        result.put("revenueByDay", revenueByDay(bookings, 7));
         result.put("recentBookings", bookings.stream()
                 .sorted(Comparator.comparing(PhieuDatSanEntity::getNgayLap, Comparator.nullsLast(Comparator.reverseOrder())))
                 .limit(6)
@@ -169,6 +175,7 @@ public class ManagementService {
         result.put("court", court);
         result.put("venue", venue);
         result.put("customer", customer);
+        result.put("invoice", hoaDonRepo.findFirstByMaPhieuDat(id).orElse(null));
         result.put("durationMinutes", booking.getBatDau() != null && booking.getKetThuc() != null
                 ? Duration.between(booking.getBatDau(), booking.getKetThuc()).toMinutes()
                 : 0);
@@ -185,6 +192,25 @@ public class ManagementService {
         requireCourt(booking.getMaSan(), authentication);
         booking.setTrangThai(normalized);
         return bookingRepo.save(booking);
+    }
+
+    /** Doanh thu và số đơn theo ngày lập đơn trong {@code days} ngày gần nhất (không tính đơn đã huỷ). */
+    private List<Map<String, Object>> revenueByDay(List<PhieuDatSanEntity> bookings, int days) {
+        LocalDate today = LocalDate.now();
+        List<Map<String, Object>> series = new ArrayList<>();
+        for (int i = days - 1; i >= 0; i--) {
+            LocalDate day = today.minusDays(i);
+            List<PhieuDatSanEntity> ofDay = bookings.stream()
+                    .filter(b -> !"DA_HUY".equals(b.getTrangThai()))
+                    .filter(b -> b.getNgayLap() != null && b.getNgayLap().toLocalDate().equals(day))
+                    .toList();
+            Map<String, Object> point = new LinkedHashMap<>();
+            point.put("date", day.toString());
+            point.put("revenue", ofDay.stream().mapToDouble(PhieuDatSanEntity::getTongTien).sum());
+            point.put("count", ofDay.size());
+            series.add(point);
+        }
+        return series;
     }
 
     /** ADMIN, hoặc OWNER sở hữu cụm sân chứa sân này. */

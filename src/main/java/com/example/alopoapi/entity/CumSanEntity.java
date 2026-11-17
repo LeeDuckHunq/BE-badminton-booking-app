@@ -1,5 +1,8 @@
 package com.example.alopoapi.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.data.annotation.Transient;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -34,6 +37,14 @@ public class CumSanEntity {
 
     @Field("ownerUsername")
     private String ownerUsername;
+
+    /** Giá thấp nhất / giờ trong các sân đang hoạt động (tính khi trả về, không lưu DB). */
+    @Transient
+    private Double giaTu;
+
+    /** Số sân đang hoạt động (tính khi trả về, không lưu DB). */
+    @Transient
+    private Integer soSan;
     //region constructor
 
     public CumSanEntity() {
@@ -86,10 +97,12 @@ public class CumSanEntity {
         this.moTa = moTa;
     }
 
+    @JsonProperty("sDT")
     public String getsDT() {
         return sDT;
     }
 
+    @JsonProperty("sDT")
     public void setsDT(String sDT) {
         this.sDT = sDT;
     }
@@ -124,6 +137,21 @@ public class CumSanEntity {
 
     public void setOwnerUsername(String ownerUsername) {
         this.ownerUsername = ownerUsername;
+    }
+    public Double getGiaTu() {
+        return giaTu;
+    }
+
+    public void setGiaTu(Double giaTu) {
+        this.giaTu = giaTu;
+    }
+
+    public Integer getSoSan() {
+        return soSan;
+    }
+
+    public void setSoSan(Integer soSan) {
+        this.soSan = soSan;
     }
     //endregion
 }

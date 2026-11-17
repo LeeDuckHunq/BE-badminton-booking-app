@@ -41,6 +41,11 @@ public class ChatController {
         return ResponseEntity.ok(chatService.getOrCreateRoom(me, other));
     }
 
+    @GetMapping("/rooms")
+    public ResponseEntity<?> myRooms(Authentication authentication) {
+        return ResponseEntity.ok(chatService.getMyRooms(AccessGuard.username(authentication)));
+    }
+
     @GetMapping("/messages/{maPhongChat}")
     public ResponseEntity<List<TinNhanEntity>> getMessages(@PathVariable String maPhongChat, Authentication authentication) {
         return ResponseEntity.ok(chatService.getMessages(maPhongChat, AccessGuard.username(authentication)));

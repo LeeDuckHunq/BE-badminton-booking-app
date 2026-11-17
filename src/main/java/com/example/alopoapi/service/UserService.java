@@ -119,7 +119,8 @@ public class UserService {
 
     public List<UserDTO> getAllUser() {
         return userRepo.findAll().stream()
-                .map(user -> new UserDTO(user.getUsername(), user.getFullName()))
+                .filter(UserEntity::isActive)
+                .map(user -> new UserDTO(user.getUsername(), user.getFullName(), safeRole(user.getRole())))
                 .toList();
     }
 
@@ -139,6 +140,14 @@ public class UserService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Role không hợp lệ");
         }
         return normalized;
+    }
+
+    private String safeRole(String role) {
+        try {
+            return normalizeRole(role);
+        } catch (ResponseStatusException exception) {
+            return "ROLE_USER";
+        }
     }
 
     private String clean(String value) {

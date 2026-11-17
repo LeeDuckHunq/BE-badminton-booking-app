@@ -13,7 +13,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -80,6 +85,44 @@ public class ChatService {
         tvRepo.save(new ThanhVienPhongChatEntity(null, maPhongChat, other, now));
 
         return maPhongChat;
+    }
+
+    /** Các phòng chat của người dùng, mới nhất trước, kèm người còn lại và tin nhắn cuối. */
+    public List<Map<String, Object>> getMyRooms(String username) {
+        List<String> roomIds = tvRepo.findByUsername(username).stream()
+                .map(ThanhVienPhongChatEntity::getMaPhongChat)
+                .distinct()
+                .toList();
+        if (roomIds.isEmpty()) {
+            return List.of();
+        }
+        Map<String, PhongChatEntity> rooms = new HashMap<>();
+        phongChatRepo.findAllById(roomIds).forEach(room -> rooms.put(room.getMaPhongChat(), room));
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (String roomId : roomIds) {
+            PhongChatEntity room = rooms.get(roomId);
+            if (room == null) continue;
+            String peer = tvRepo.findByMaPhongChat(roomId).stream()
+                    .map(ThanhVienPhongChatEntity::getUsername)
+                    .filter(name -> name != null && !name.equalsIgnoreCase(username))
+                    .findFirst()
+                    .orElse(null);
+            if (peer == null) continue;
+            var peerUser = userRepo.findByUsernameIgnoreCase(peer);
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("maPhongChat", roomId);
+            item.put("peerUsername", peer);
+            item.put("peerFullName", peerUser.map(u -> u.getFullName()).orElse(null));
+            item.put("peerRole", peerUser.map(u -> u.getRole()).orElse(null));
+            item.put("tinNhanCuoi", room.getTinNhanCuoi());
+            item.put("thoiGianTinNhanCuoi", room.getThoiGianTinNhanCuoi() != null ? room.getThoiGianTinNhanCuoi() : room.getNgayTao());
+            result.add(item);
+        }
+        result.sort(Comparator.comparing(
+                (Map<String, Object> item) -> (LocalDateTime) item.get("thoiGianTinNhanCuoi"),
+                Comparator.nullsLast(Comparator.reverseOrder())));
+        return result;
     }
 
     public List<TinNhanEntity> getMessages(String maPhongChat, String username) {
