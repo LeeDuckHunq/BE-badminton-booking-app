@@ -1,34 +1,50 @@
 package com.example.alopoapi.service;
 
 import com.example.alopoapi.entity.FavoriteEntity;
+import com.example.alopoapi.repository.CumSanRepo;
 import com.example.alopoapi.repository.FavoriteRepo;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class FavoriteService {
 
-    @Autowired
-    private FavoriteRepo favoriteRepo;
+    private final FavoriteRepo favoriteRepo;
+    private final CumSanRepo cumSanRepo;
 
-    public void addFavForUser(FavoriteEntity fav) {
-        if (favoriteRepo.existsByMaNguoiDungAndMaCumSan(fav.getMaNguoiDung(), fav.getMaCumSan())) {
-            throw new RuntimeException("Sân này đã có trong yêu thích");
-        }
-        favoriteRepo.save(fav);
+    public FavoriteService(FavoriteRepo favoriteRepo, CumSanRepo cumSanRepo) {
+        this.favoriteRepo = favoriteRepo;
+        this.cumSanRepo = cumSanRepo;
     }
 
-    public void deleteFavFromUser(String maFav) {
-        if (!favoriteRepo.existsById(maFav)) {
-            throw new RuntimeException("Không tìm thấy mục yêu thích");
+    public FavoriteEntity addFavForUser(String username, String maCumSan) {
+        if (maCumSan == null || maCumSan.isBlank() || !cumSanRepo.existsById(maCumSan)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy cụm sân");
+        }
+        if (favoriteRepo.existsByMaNguoiDungAndMaCumSan(username, maCumSan)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Sân này đã có trong yêu thích");
+        }
+        return favoriteRepo.save(new FavoriteEntity("FAV_" + UUID.randomUUID(), username, maCumSan));
+    }
+
+    public void deleteFavFromUser(String maFav, String username) {
+        FavoriteEntity fav = favoriteRepo.findById(maFav)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy mục yêu thích"));
+        if (fav.getMaNguoiDung() == null || !fav.getMaNguoiDung().equalsIgnoreCase(username)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền xoá mục yêu thích này");
         }
         favoriteRepo.deleteById(maFav);
     }
 
     public List<FavoriteEntity> getUserFavorites(String maNguoiDung) {
         return favoriteRepo.findAllByMaNguoiDung(maNguoiDung);
+    }
+
+    public boolean isFavorite(String maNguoiDung, String maCumSan) {
+        return favoriteRepo.existsByMaNguoiDungAndMaCumSan(maNguoiDung, maCumSan);
     }
 }

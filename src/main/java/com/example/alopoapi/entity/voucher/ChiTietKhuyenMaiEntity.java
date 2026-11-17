@@ -16,6 +16,12 @@ public class ChiTietKhuyenMaiEntity {
     @Field("maNguoiDung")
     private String maNguoiDung;
 
+    @Field("daSuDung")
+    private Boolean daSuDung;
+
+    @Field("maHoaDon")
+    private String maHoaDon;
+
     //region constructor
 
     public ChiTietKhuyenMaiEntity() {
@@ -45,6 +51,22 @@ public class ChiTietKhuyenMaiEntity {
 
     public void setMaNguoiDung(String maNguoiDung) {
         this.maNguoiDung = maNguoiDung;
+    }
+
+    public boolean isDaSuDung() {
+        return Boolean.TRUE.equals(daSuDung);
+    }
+
+    public void setDaSuDung(Boolean daSuDung) {
+        this.daSuDung = daSuDung;
+    }
+
+    public String getMaHoaDon() {
+        return maHoaDon;
+    }
+
+    public void setMaHoaDon(String maHoaDon) {
+        this.maHoaDon = maHoaDon;
     }
 
     public String getId() {

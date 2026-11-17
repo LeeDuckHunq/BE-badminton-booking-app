@@ -15,4 +15,6 @@ public interface ThanhVienPhongChatRepo
 
     List<ThanhVienPhongChatEntity>
     findByUsername(String username);
+
+    boolean existsByMaPhongChatAndUsername(String maPhongChat, String username);
 }

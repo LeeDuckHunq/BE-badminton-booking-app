@@ -48,6 +48,7 @@ public class PhieuDatSanEntity {
         this.ketThuc = ketThuc;
         this.tongTien = tongTien;
         this.ngayLap = ngayLap;
+        this.trangThai = trangThai;
     }
     //endregion
 

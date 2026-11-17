@@ -4,115 +4,88 @@ import com.example.alopoapi.entity.voucher.ChiTietKhuyenMaiEntity;
 import com.example.alopoapi.entity.voucher.KhuyenMaiEntity;
 import com.example.alopoapi.repository.ChiTietKhuyenMaiRepo;
 import com.example.alopoapi.repository.KhuyenMaiRepo;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class KhuyenMaiService {
 
-    @Autowired
-    private KhuyenMaiRepo khuyenMaiRepo;
+    private final KhuyenMaiRepo khuyenMaiRepo;
+    private final ChiTietKhuyenMaiRepo chiTietKhuyenMaiRepo;
+    private final MongoTemplate mongoTemplate;
 
-    @Autowired
-    private ChiTietKhuyenMaiRepo chiTietKhuyenMaiRepo;
+    public KhuyenMaiService(
+            KhuyenMaiRepo khuyenMaiRepo,
+            ChiTietKhuyenMaiRepo chiTietKhuyenMaiRepo,
+            MongoTemplate mongoTemplate
+    ) {
+        this.khuyenMaiRepo = khuyenMaiRepo;
+        this.chiTietKhuyenMaiRepo = chiTietKhuyenMaiRepo;
+        this.mongoTemplate = mongoTemplate;
+    }
 
+    /** Voucher user đang sở hữu, còn hiệu lực và chưa sử dụng. */
     public List<KhuyenMaiEntity> getKhuyenMaiCuaUser(String username) {
-
-        List<KhuyenMaiEntity> kmList = new ArrayList<>();
-
-        for (var _km : chiTietKhuyenMaiRepo.findAll()) {
-            if (_km.getMaNguoiDung().equals(username)) {
-                for (var km : khuyenMaiRepo.findAll()) {
-                    if (_km.getMaKM().equals(km.getMaKhuyenMai())) {
-                        if (LocalDateTime.now().isBefore(km.getNgayKetThuc()) &&
-                                LocalDateTime.now().isAfter(km.getNgayBatDau())) {
-                            kmList.add(km);
-                            break;
-                        }
-                    }
-                }
-            }
+        Set<String> unusedIds = chiTietKhuyenMaiRepo.findByMaNguoiDung(username).stream()
+                .filter(ct -> !ct.isDaSuDung())
+                .map(ChiTietKhuyenMaiEntity::getMaKM)
+                .collect(Collectors.toSet());
+        if (unusedIds.isEmpty()) {
+            return List.of();
         }
-
-        return kmList;
+        LocalDateTime now = LocalDateTime.now();
+        return khuyenMaiRepo.findAllById(unusedIds).stream()
+                .filter(km -> conHieuLuc(km, now))
+                .toList();
     }
 
     public List<KhuyenMaiEntity> getKhuyenMaiChuaCo(String username) {
-
-        List<KhuyenMaiEntity> kmList = new ArrayList<>();
-
-        List<String> maKMUserDaCo = new ArrayList<>();
-
-        for (var ctkm : chiTietKhuyenMaiRepo.findAll()) {
-            if (ctkm.getMaNguoiDung().equals(username)) {
-                maKMUserDaCo.add(ctkm.getMaKM());
-            }
-        }
-
-        for (var km : khuyenMaiRepo.findAll()) {
-
-            boolean chuaCo = !maKMUserDaCo.contains(km.getMaKhuyenMai());
-
-            boolean conHieuLuc =
-                    (LocalDateTime.now().isAfter(km.getNgayBatDau()) ||
-                            LocalDateTime.now().isEqual(km.getNgayBatDau()))
-                            &&
-                            (LocalDateTime.now().isBefore(km.getNgayKetThuc()) ||
-                                    LocalDateTime.now().isEqual(km.getNgayKetThuc()));
-
-            if (chuaCo && conHieuLuc) {
-                kmList.add(km);
-            }
-        }
-
-        return kmList;
+        Set<String> owned = chiTietKhuyenMaiRepo.findByMaNguoiDung(username).stream()
+                .map(ChiTietKhuyenMaiEntity::getMaKM)
+                .collect(Collectors.toSet());
+        LocalDateTime now = LocalDateTime.now();
+        return khuyenMaiRepo.findAll().stream()
+                .filter(km -> !owned.contains(km.getMaKhuyenMai()))
+                .filter(km -> conHieuLuc(km, now))
+                .toList();
     }
 
     public String nhanKhuyenMai(String username, String maKhuyenMai) {
-
-        for (var ct : chiTietKhuyenMaiRepo.findAll()) {
-
-            if (ct.getMaNguoiDung().equals(username) && ct.getMaKM().equals(maKhuyenMai)) {
-
-                return "Bạn đã nhận khuyến mãi này";
-            }
+        if (maKhuyenMai == null || maKhuyenMai.isBlank()) {
+            return "Không tìm thấy khuyến mãi";
+        }
+        if (chiTietKhuyenMaiRepo.existsByMaNguoiDungAndMaKM(username, maKhuyenMai)) {
+            return "Bạn đã nhận khuyến mãi này";
         }
 
-        KhuyenMaiEntity khuyenMai = null;
-
-        for (var km : khuyenMaiRepo.findAll()) {
-
-            if (km.getMaKhuyenMai().equals(maKhuyenMai)) {
-                khuyenMai = km;
-                break;
-            }
-        }
-
+        KhuyenMaiEntity khuyenMai = khuyenMaiRepo.findById(maKhuyenMai).orElse(null);
         if (khuyenMai == null) {
             return "Không tìm thấy khuyến mãi";
         }
-
-        LocalDateTime now = LocalDateTime.now();
-
-        boolean conHieuLuc =
-                !now.isBefore(khuyenMai.getNgayBatDau())
-                        && !now.isAfter(khuyenMai.getNgayKetThuc());
-
-        if (!conHieuLuc) {
+        if (!conHieuLuc(khuyenMai, LocalDateTime.now())) {
             return "Khuyến mãi đã hết hạn";
         }
 
-        ChiTietKhuyenMaiEntity ct = new ChiTietKhuyenMaiEntity();
-
-        ct.setMaNguoiDung(username);
-        ct.setMaKM(maKhuyenMai);
-
-        chiTietKhuyenMaiRepo.save(ct);
-
+        // _id cố định theo (user, mã KM) để 2 request đồng thời không tạo 2 bản ghi.
+        ChiTietKhuyenMaiEntity ct = new ChiTietKhuyenMaiEntity(username + ":" + maKhuyenMai, maKhuyenMai, username);
+        ct.setDaSuDung(false);
+        try {
+            mongoTemplate.insert(ct);
+        } catch (DuplicateKeyException exception) {
+            return "Bạn đã nhận khuyến mãi này";
+        }
         return "Nhận khuyến mãi thành công";
+    }
+
+    private boolean conHieuLuc(KhuyenMaiEntity km, LocalDateTime now) {
+        return km.getNgayBatDau() != null && km.getNgayKetThuc() != null
+                && !now.isBefore(km.getNgayBatDau())
+                && !now.isAfter(km.getNgayKetThuc());
     }
 }

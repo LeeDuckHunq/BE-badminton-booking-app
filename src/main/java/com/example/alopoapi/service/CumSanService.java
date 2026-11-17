@@ -2,77 +2,31 @@ package com.example.alopoapi.service;
 
 import com.example.alopoapi.entity.CumSanEntity;
 import com.example.alopoapi.repository.CumSanRepo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class CumSanService {
 
-    @Autowired
-    private CumSanRepo cumSanRepo;
+    private final CumSanRepo cumSanRepo;
 
+    public CumSanService(CumSanRepo cumSanRepo) {
+        this.cumSanRepo = cumSanRepo;
+    }
+
+    /** Tối đa {@code soLuong} cụm sân đang hoạt động. */
     public List<CumSanEntity> getCumSan(int soLuong) {
-
-        if (soLuong > cumSanRepo.count()) soLuong = (int)cumSanRepo.count();
-
-        List<CumSanEntity> cumSanList = new ArrayList<>();
-        List<CumSanEntity> ds = cumSanRepo.findAll();
-
-        for (int i = 0; i < soLuong; i++) {
-            if (ds.get(i).getTrangThai().equals("ACTIVE")) {
-                cumSanList.add(ds.get(i));
-            }
+        if (soLuong <= 0) {
+            return List.of();
         }
-
-        return cumSanList;
+        return cumSanRepo.findAll().stream()
+                .filter(cs -> "ACTIVE".equals(cs.getTrangThai()))
+                .limit(soLuong)
+                .toList();
     }
 
     public CumSanEntity getCumSanInfo(String maCumSan) {
-
-        for (var cs : cumSanRepo.findAll()) {
-            if (cs.getMaCumSan().equals(maCumSan)) {
-                return cs;
-            }
-        }
-
-        return null;
-    }
-
-    public void createCumSan(CumSanEntity cumsan) {
-
-        var exist = cumSanRepo.findById(cumsan.getMaCumSan());
-
-        if (exist.isEmpty()) {
-            cumSanRepo.save(cumsan);
-        }
-    }
-
-    public void editCumSan(CumSanEntity cumsan) {
-
-        var exist = cumSanRepo.findById(cumsan.getMaCumSan());
-
-        if (!exist.isEmpty()) {
-            cumSanRepo.save(cumsan);
-        }
-    }
-
-    public boolean deleteCumSan(String maCumSan) {
-
-        var exist = cumSanRepo.findById(maCumSan);
-
-        if (exist.isPresent()) {
-
-            CumSanEntity cumSan = exist.get();
-            cumSan.setTrangThai("DELETED");
-
-            cumSanRepo.save(cumSan);
-
-            return true;
-        }
-
-        return false;
+        return cumSanRepo.findById(maCumSan).orElse(null);
     }
 }

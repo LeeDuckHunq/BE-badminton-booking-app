@@ -1,56 +1,50 @@
 package com.example.alopoapi.controller;
 
 import com.example.alopoapi.entity.FavoriteEntity;
+import com.example.alopoapi.security.AccessGuard;
 import com.example.alopoapi.service.FavoriteService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/yeu-thich")
 public class FavoriteController {
 
-    @Autowired
-    private FavoriteService favoriteService;
+    private final FavoriteService favoriteService;
+
+    public FavoriteController(FavoriteService favoriteService) {
+        this.favoriteService = favoriteService;
+    }
 
     @GetMapping("/{maNguoiDung}")
     public ResponseEntity<List<FavoriteEntity>> getUserFavorites(
-            @PathVariable String maNguoiDung) {
+            @PathVariable String maNguoiDung, Authentication authentication) {
+        AccessGuard.requireSelfOrAdmin(authentication, maNguoiDung);
         return ResponseEntity.ok(favoriteService.getUserFavorites(maNguoiDung));
     }
 
+    /** Luôn thêm cho tài khoản đang đăng nhập; trường maNguoiDung trong body bị bỏ qua. */
     @PostMapping("/them")
-    public ResponseEntity<?> addFav(@RequestBody FavoriteEntity fav) {
-        try {
-            fav.setMaFav("FAV_" + UUID.randomUUID());
-            favoriteService.addFavForUser(fav);
-            return ResponseEntity.ok("Đã thêm vào yêu thích");
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-        }
+    public ResponseEntity<?> addFav(@RequestBody FavoriteEntity fav, Authentication authentication) {
+        favoriteService.addFavForUser(AccessGuard.username(authentication), fav == null ? null : fav.getMaCumSan());
+        return ResponseEntity.ok("Đã thêm vào yêu thích");
     }
 
     @DeleteMapping("/xoa/{maFav}")
-    public ResponseEntity<?> deleteFav(@PathVariable String maFav) {
-        try {
-            favoriteService.deleteFavFromUser(maFav);
-            return ResponseEntity.ok("Đã xóa khỏi yêu thích");
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
+    public ResponseEntity<?> deleteFav(@PathVariable String maFav, Authentication authentication) {
+        favoriteService.deleteFavFromUser(maFav, AccessGuard.username(authentication));
+        return ResponseEntity.ok("Đã xóa khỏi yêu thích");
     }
 
     @GetMapping("/kiem-tra")
     public ResponseEntity<Boolean> kiemTra(
             @RequestParam String maNguoiDung,
-            @RequestParam String maCumSan) {
-        List<FavoriteEntity> favList = favoriteService.getUserFavorites(maNguoiDung);
-        boolean isFav = favList.stream()
-                .anyMatch(f -> f.getMaCumSan().equals(maCumSan));
-        return ResponseEntity.ok(isFav);
+            @RequestParam String maCumSan,
+            Authentication authentication) {
+        AccessGuard.requireSelfOrAdmin(authentication, maNguoiDung);
+        return ResponseEntity.ok(favoriteService.isFavorite(maNguoiDung, maCumSan));
     }
 }

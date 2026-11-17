@@ -187,6 +187,25 @@ public class ManagementService {
         return bookingRepo.save(booking);
     }
 
+    /** ADMIN, hoặc OWNER sở hữu cụm sân chứa sân này. */
+    public boolean canManageCourt(String maSan, Authentication authentication) {
+        if (isAdmin(authentication)) {
+            return true;
+        }
+        if (authentication == null || authentication.getAuthorities().stream()
+                .noneMatch(authority -> "ROLE_OWNER".equals(authority.getAuthority()))) {
+            return false;
+        }
+        if (maSan == null) {
+            return false;
+        }
+        return sanRepo.findById(maSan)
+                .filter(court -> court.getMaCumSan() != null)
+                .flatMap(court -> cumSanRepo.findById(court.getMaCumSan()))
+                .map(venue -> authentication.getName().equalsIgnoreCase(venue.getOwnerUsername()))
+                .orElse(false);
+    }
+
     private CumSanEntity requireVenue(String id, Authentication authentication) {
         CumSanEntity venue = cumSanRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy cụm sân"));

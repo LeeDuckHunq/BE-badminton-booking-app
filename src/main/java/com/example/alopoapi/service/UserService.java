@@ -27,7 +27,9 @@ public class UserService {
     public boolean register(Map<String, String> newUser) {
         String username = clean(newUser.get("username"));
         String password = newUser.get("password");
-        if (username == null || password == null || password.length() < 6 || userRepo.findByUsernameIgnoreCase(username).isPresent()) {
+        if (username == null || !username.matches("[A-Za-z0-9_.-]{3,32}")
+                || password == null || password.length() < 6 || password.length() > 128
+                || userRepo.findByUsernameIgnoreCase(username).isPresent()) {
             return false;
         }
 
@@ -72,7 +74,7 @@ public class UserService {
     public UserEntity createManagedUser(Map<String, String> request) {
         String username = clean(request.get("username"));
         String password = request.get("password");
-        if (username == null || password == null || password.length() < 8) {
+        if (username == null || !username.matches("[A-Za-z0-9_.-]{3,32}") || password == null || password.length() < 8) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username và mật khẩu tối thiểu 8 ký tự là bắt buộc");
         }
         if (userRepo.findByUsernameIgnoreCase(username).isPresent()) {
