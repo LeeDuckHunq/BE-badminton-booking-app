@@ -33,6 +33,28 @@ public class PhieuDatSanEntity {
     @Field("trangThai")
     private String trangThai;
 
+    /** APP (khách tự đặt trên app) hoặc TAI_SAN (chủ sân đặt hộ). Null = APP (dữ liệu cũ). */
+    @Field("nguonDat")
+    private String nguonDat;
+
+    /** Đơn đặt hộ: CHUYEN_KHOAN, TIEN_MAT hoặc TRA_SAU. Đơn từ app thanh toán qua hoá đơn. */
+    @Field("phuongThucThanhToan")
+    private String phuongThucThanhToan;
+
+    /** Khách vãng lai (không có tài khoản) – hoặc tên/SĐT liên hệ do chủ sân ghi. */
+    @Field("tenKhachHang")
+    private String tenKhachHang;
+
+    @Field("sdtKhachHang")
+    private String sdtKhachHang;
+
+    @Field("ghiChu")
+    private String ghiChu;
+
+    /** Tài khoản quản lý đã tạo đơn đặt hộ. */
+    @Field("nguoiTao")
+    private String nguoiTao;
+
     //region constructor
 
     public PhieuDatSanEntity() {
@@ -116,6 +138,54 @@ public class PhieuDatSanEntity {
 
     public void setTrangThai(String trangThai) {
         this.trangThai = trangThai;
+    }
+
+    public String getNguonDat() {
+        return nguonDat;
+    }
+
+    public void setNguonDat(String nguonDat) {
+        this.nguonDat = nguonDat;
+    }
+
+    public String getPhuongThucThanhToan() {
+        return phuongThucThanhToan;
+    }
+
+    public void setPhuongThucThanhToan(String phuongThucThanhToan) {
+        this.phuongThucThanhToan = phuongThucThanhToan;
+    }
+
+    public String getTenKhachHang() {
+        return tenKhachHang;
+    }
+
+    public void setTenKhachHang(String tenKhachHang) {
+        this.tenKhachHang = tenKhachHang;
+    }
+
+    public String getSdtKhachHang() {
+        return sdtKhachHang;
+    }
+
+    public void setSdtKhachHang(String sdtKhachHang) {
+        this.sdtKhachHang = sdtKhachHang;
+    }
+
+    public String getGhiChu() {
+        return ghiChu;
+    }
+
+    public void setGhiChu(String ghiChu) {
+        this.ghiChu = ghiChu;
+    }
+
+    public String getNguoiTao() {
+        return nguoiTao;
+    }
+
+    public void setNguoiTao(String nguoiTao) {
+        this.nguoiTao = nguoiTao;
     }
     //endregion
 

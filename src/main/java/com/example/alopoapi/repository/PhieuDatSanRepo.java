@@ -24,6 +24,9 @@ public interface PhieuDatSanRepo extends MongoRepository<PhieuDatSanEntity, Stri
     findByMaSanIn(List<String> maSan);
 
     List<PhieuDatSanEntity>
+    findByMaSanInAndBatDauBetween(List<String> maSan, LocalDateTime start, LocalDateTime end);
+
+    List<PhieuDatSanEntity>
     findByMaNguoiDung(String maNguoiDung);
 
     @Query(value = "{ 'maSan': ?0, " +

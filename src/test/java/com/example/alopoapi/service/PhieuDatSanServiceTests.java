@@ -166,6 +166,61 @@ class PhieuDatSanServiceTests {
     }
 
     @Test
+    void walkInBookingIsConfirmedImmediatelyAndMarkedAsVenueBooking() {
+        CreatePhieuDatRequest request = validRequest();
+        stubActiveCourt();
+        when(bookingLockService.tryAcquire(eq("S1"), any())).thenReturn(true);
+        when(bookingRepository.existsConflict("S1", request.getBatDau(), request.getKetThuc())).thenReturn(false);
+        when(bookingRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        PhieuDatSanEntity booking = service.createWalkIn(request, b -> {
+            b.setTenKhachHang("Khách vãng lai");
+            b.setPhuongThucThanhToan("TIEN_MAT");
+        });
+
+        assertEquals("DA_XAC_NHAN", booking.getTrangThai());
+        assertEquals("TAI_SAN", booking.getNguonDat());
+        assertEquals("TIEN_MAT", booking.getPhuongThucThanhToan());
+        assertNull(booking.getMaNguoiDung());
+        assertEquals(150_000, booking.getTongTien());
+        verify(bookingLockService).release(eq("S1"), any());
+    }
+
+    @Test
+    void walkInMayBookTheSlotInProgressButAppBookingMayNot() {
+        LocalDateTime now = LocalDateTime.now().withSecond(0).withNano(0);
+        CreatePhieuDatRequest request = new CreatePhieuDatRequest();
+        request.setMaSan("S1");
+        request.setBatDau(now.minusMinutes(20));
+        request.setKetThuc(now.plusMinutes(40));
+
+        assertThrows(ResponseStatusException.class, () -> service.createPhieuDat(request, "user1"));
+
+        when(courtRepository.findById("S1"))
+                .thenReturn(Optional.of(new SanEntity("S1", "Sân 1", 100_000, true, "CS1")));
+        // Giờ mở cửa cả ngày để test không phụ thuộc thời điểm chạy.
+        when(venueRepository.findById("CS1")).thenReturn(Optional.of(new CumSanEntity("CS1", "Cụm 1", "Địa chỉ", "", "", null, null)));
+        when(bookingLockService.tryAcquire(eq("S1"), any())).thenReturn(true);
+        when(bookingRepository.existsConflict(any(), any(), any())).thenReturn(false);
+        when(bookingRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        PhieuDatSanEntity booking = service.createWalkIn(request, b -> b.setTenKhachHang("Khách"));
+        assertEquals("DA_XAC_NHAN", booking.getTrangThai());
+    }
+
+    @Test
+    void walkInStillRejectsOverlaps() {
+        CreatePhieuDatRequest request = validRequest();
+        stubActiveCourt();
+        when(bookingLockService.tryAcquire(eq("S1"), any())).thenReturn(true);
+        when(bookingRepository.existsConflict("S1", request.getBatDau(), request.getKetThuc())).thenReturn(true);
+
+        ResponseStatusException conflict = assertThrows(ResponseStatusException.class, () -> service.createWalkIn(request, b -> {}));
+        assertEquals(HttpStatus.CONFLICT, conflict.getStatusCode());
+        verify(bookingRepository, never()).save(any());
+    }
+
+    @Test
     void publicScheduleHidesCustomer() {
         when(bookingRepository.findByBatDauBetween(any(), any())).thenReturn(List.of(pendingBooking()));
 

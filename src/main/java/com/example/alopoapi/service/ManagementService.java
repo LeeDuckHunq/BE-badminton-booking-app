@@ -1,5 +1,7 @@
 package com.example.alopoapi.service;
 
+import com.example.alopoapi.dto.request.CreatePhieuDatRequest;
+import com.example.alopoapi.dto.request.WalkInBookingRequest;
 import com.example.alopoapi.entity.CumSanEntity;
 import com.example.alopoapi.entity.PhieuDatSanEntity;
 import com.example.alopoapi.entity.SanEntity;
@@ -33,13 +35,150 @@ public class ManagementService {
     private final PhieuDatSanRepo bookingRepo;
     private final UserRepo userRepo;
     private final HoaDonRepo hoaDonRepo;
+    private final PhieuDatSanService phieuDatSanService;
 
-    public ManagementService(CumSanRepo cumSanRepo, SanRepo sanRepo, PhieuDatSanRepo bookingRepo, UserRepo userRepo, HoaDonRepo hoaDonRepo) {
+    private static final List<String> PAYMENT_METHODS = List.of("TIEN_MAT", "CHUYEN_KHOAN", "TRA_SAU");
+
+    public ManagementService(CumSanRepo cumSanRepo, SanRepo sanRepo, PhieuDatSanRepo bookingRepo, UserRepo userRepo,
+                             HoaDonRepo hoaDonRepo, PhieuDatSanService phieuDatSanService) {
         this.cumSanRepo = cumSanRepo;
         this.sanRepo = sanRepo;
         this.bookingRepo = bookingRepo;
         this.userRepo = userRepo;
         this.hoaDonRepo = hoaDonRepo;
+        this.phieuDatSanService = phieuDatSanService;
+    }
+
+    // ── Đặt hộ khách ─────────────────────────────────────────────────────────
+
+    /** Chủ sân / admin đặt hộ khách: đơn xác nhận ngay, ghi cách thanh toán. */
+    public PhieuDatSanEntity createWalkInBooking(WalkInBookingRequest request, Authentication authentication) {
+        if (request == null || request.getMaSan() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng chọn sân");
+        }
+        requireCourt(request.getMaSan(), authentication);
+
+        String payment = required(request.getPhuongThucThanhToan(), "Vui lòng chọn cách thanh toán").toUpperCase(Locale.ROOT);
+        if (!PAYMENT_METHODS.contains(payment)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cách thanh toán không hợp lệ");
+        }
+        String note = blankToNull(request.getGhiChu());
+        if (note != null && note.length() > 500) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ghi chú tối đa 500 ký tự");
+        }
+
+        String username = blankToNull(request.getMaNguoiDung());
+        UserEntity customer = null;
+        if (username != null) {
+            customer = userRepo.findByUsernameIgnoreCase(username)
+                    .filter(UserEntity::isActive)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy tài khoản khách hàng"));
+        }
+        String name = blankToNull(request.getTenKhachHang());
+        String phone = blankToNull(request.getSdtKhachHang());
+        if (customer != null) {
+            if (name == null) name = customer.getFullName() != null ? customer.getFullName() : customer.getUsername();
+            if (phone == null) phone = customer.getPhoneNumber();
+        } else {
+            if (name == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập tên khách");
+            if (phone == null || !phone.replaceAll("[\\s.]", "").matches("\\+?\\d{9,12}")) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số điện thoại khách không hợp lệ");
+            }
+        }
+        if (name.length() > 100) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tên khách quá dài");
+        }
+
+        CreatePhieuDatRequest booking = new CreatePhieuDatRequest();
+        booking.setMaSan(request.getMaSan());
+        booking.setBatDau(request.getBatDau());
+        booking.setKetThuc(request.getKetThuc());
+
+        final UserEntity linked = customer;
+        final String guestName = name;
+        final String guestPhone = phone;
+        return phieuDatSanService.createWalkIn(booking, b -> {
+            b.setMaNguoiDung(linked == null ? null : linked.getUsername());
+            b.setTenKhachHang(guestName);
+            b.setSdtKhachHang(guestPhone);
+            b.setPhuongThucThanhToan(payment);
+            b.setGhiChu(note);
+            b.setNguoiTao(authentication.getName());
+        });
+    }
+
+    /**
+     * Tìm khách có tài khoản để gắn vào đơn đặt hộ. Chỉ khớp theo tên / username (≥ 3 ký tự)
+     * hoặc đúng số điện thoại đầy đủ; số điện thoại trả về được che bớt để tránh dò danh bạ.
+     */
+    public List<Map<String, Object>> searchCustomers(String query) {
+        String q = query == null ? "" : query.trim().toLowerCase(Locale.ROOT);
+        String digits = q.replaceAll("\\D", "");
+        boolean byPhone = digits.length() >= 9 && digits.length() == q.replaceAll("[\\s.+]", "").length();
+        if (!byPhone && q.length() < 3) {
+            return List.of();
+        }
+        return userRepo.findAll().stream()
+                .filter(UserEntity::isActive)
+                .filter(u -> byPhone
+                        ? u.getPhoneNumber() != null && u.getPhoneNumber().replaceAll("\\D", "").endsWith(digits.length() > 10 ? digits.substring(digits.length() - 9) : digits)
+                        : u.getUsername().toLowerCase(Locale.ROOT).contains(q)
+                          || (u.getFullName() != null && u.getFullName().toLowerCase(Locale.ROOT).contains(q)))
+                .limit(8)
+                .map(u -> {
+                    Map<String, Object> item = new LinkedHashMap<>();
+                    item.put("username", u.getUsername());
+                    item.put("fullName", u.getFullName());
+                    item.put("phoneMasked", maskPhone(u.getPhoneNumber()));
+                    return item;
+                })
+                .toList();
+    }
+
+    /** Lịch hoạt động trong 1 ngày của các cụm sân được quản lý (hoặc 1 cụm nếu chỉ định). */
+    public Map<String, Object> timeline(LocalDate date, String venueId, Authentication authentication) {
+        List<CumSanEntity> venues = venueId == null || venueId.isBlank()
+                ? venues(authentication).stream().filter(v -> "ACTIVE".equals(v.getTrangThai())).toList()
+                : List.of(requireVenue(venueId, authentication));
+        List<String> venueIds = venues.stream().map(CumSanEntity::getMaCumSan).toList();
+        List<SanEntity> courts = venueIds.isEmpty() ? List.of() : sanRepo.findByMaCumSanIn(venueIds);
+        List<String> courtIds = courts.stream().map(SanEntity::getMaSan).toList();
+        List<PhieuDatSanEntity> bookings = courtIds.isEmpty() ? List.of()
+                : bookingRepo.findByMaSanInAndBatDauBetween(courtIds, date.atStartOfDay(), date.atTime(java.time.LocalTime.MAX));
+
+        Map<String, UserEntity> users = new LinkedHashMap<>();
+        for (PhieuDatSanEntity b : bookings) {
+            if (b.getMaNguoiDung() != null && !users.containsKey(b.getMaNguoiDung())) {
+                userRepo.findByUsernameIgnoreCase(b.getMaNguoiDung()).ifPresent(u -> users.put(b.getMaNguoiDung(), u));
+            }
+        }
+        List<Map<String, Object>> items = bookings.stream()
+                .sorted(Comparator.comparing(PhieuDatSanEntity::getBatDau))
+                .map(b -> {
+                    UserEntity u = users.get(b.getMaNguoiDung());
+                    Map<String, Object> item = new LinkedHashMap<>();
+                    item.put("booking", b);
+                    item.put("customerName", b.getTenKhachHang() != null ? b.getTenKhachHang()
+                            : u != null && u.getFullName() != null ? u.getFullName() : b.getMaNguoiDung());
+                    item.put("customerPhone", b.getSdtKhachHang() != null ? b.getSdtKhachHang() : u != null ? u.getPhoneNumber() : null);
+                    item.put("hasInvoice", hoaDonRepo.existsByMaPhieuDat(b.getMaPhieuDat()));
+                    return item;
+                })
+                .toList();
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("date", date.toString());
+        result.put("venues", venues);
+        result.put("courts", courts);
+        result.put("bookings", items);
+        return result;
+    }
+
+    private String maskPhone(String phone) {
+        if (phone == null) return null;
+        String digits = phone.replaceAll("\\D", "");
+        if (digits.length() < 6) return "***";
+        return digits.substring(0, 3) + "****" + digits.substring(digits.length() - 3);
     }
 
     public Map<String, Object> currentUser(Authentication authentication) {
@@ -168,7 +307,9 @@ public class ManagementService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn đặt"));
         SanEntity court = requireCourt(booking.getMaSan(), authentication);
         CumSanEntity venue = cumSanRepo.findById(court.getMaCumSan()).orElse(null);
-        UserEntity customer = userRepo.findByUsernameIgnoreCase(booking.getMaNguoiDung()).orElse(null);
+        // Đơn đặt hộ khách vãng lai không gắn tài khoản.
+        UserEntity customer = booking.getMaNguoiDung() == null ? null
+                : userRepo.findByUsernameIgnoreCase(booking.getMaNguoiDung()).orElse(null);
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("booking", booking);

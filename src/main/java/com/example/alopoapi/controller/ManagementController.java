@@ -1,6 +1,9 @@
 package com.example.alopoapi.controller;
 
+import com.example.alopoapi.dto.request.WalkInBookingRequest;
 import com.example.alopoapi.entity.CumSanEntity;
+import org.springframework.format.annotation.DateTimeFormat;
+import java.time.LocalDate;
 import com.example.alopoapi.entity.SanEntity;
 import com.example.alopoapi.service.ManagementService;
 import com.example.alopoapi.service.UserService;
@@ -77,6 +80,27 @@ public class ManagementController {
     @GetMapping("/bookings")
     public ResponseEntity<?> bookings(Authentication authentication) {
         return ResponseEntity.ok(managementService.bookings(authentication));
+    }
+
+    /** Chủ sân / admin đặt hộ khách (gọi điện hoặc tới sân). */
+    @PostMapping("/bookings")
+    public ResponseEntity<?> createWalkInBooking(@RequestBody WalkInBookingRequest request, Authentication authentication) {
+        return ResponseEntity.ok(managementService.createWalkInBooking(request, authentication));
+    }
+
+    /** Tìm khách có tài khoản để gắn vào đơn đặt hộ. */
+    @GetMapping("/customers")
+    public ResponseEntity<?> searchCustomers(@RequestParam(defaultValue = "") String q) {
+        return ResponseEntity.ok(managementService.searchCustomers(q));
+    }
+
+    /** Lịch hoạt động các sân trong một ngày. */
+    @GetMapping("/timeline")
+    public ResponseEntity<?> timeline(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) String venue,
+            Authentication authentication) {
+        return ResponseEntity.ok(managementService.timeline(date, venue, authentication));
     }
 
     @GetMapping("/bookings/{id}")

@@ -17,13 +17,18 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 @Service
 public class PhieuDatSanService {
 
     static final String CHO_XAC_NHAN = "CHO_XAC_NHAN";
+    static final String DA_XAC_NHAN = "DA_XAC_NHAN";
+    public static final String NGUON_APP = "APP";
+    public static final String NGUON_TAI_SAN = "TAI_SAN";
     private static final Duration MAX_BOOKING_DURATION = Duration.ofHours(12);
     private static final Duration PAST_TOLERANCE = Duration.ofMinutes(5);
+    private static final Duration WALK_IN_PAST_TOLERANCE = Duration.ofMinutes(30);
 
     private final PhieuDatSanRepo phieuDatSanRepo;
     private final SanRepo sanRepo;
@@ -66,8 +71,29 @@ public class PhieuDatSanService {
                 .toList();
     }
 
+    /** Khách tự đặt trên app: chờ xác nhận, thanh toán qua hoá đơn + bill. */
     public PhieuDatSanEntity createPhieuDat(CreatePhieuDatRequest request, String username) {
-        validateRequest(request);
+        return reserve(request, PAST_TOLERANCE, booking -> {
+            booking.setMaNguoiDung(username);
+            booking.setNguonDat(NGUON_APP);
+            booking.setTrangThai(CHO_XAC_NHAN);
+        });
+    }
+
+    /**
+     * Chủ sân / admin đặt hộ khách (gọi điện hoặc tới sân). Quyền với sân phải được kiểm tra trước khi gọi.
+     * Cho phép đặt khung 30 phút đang diễn ra (khách tới sân chơi ngay).
+     */
+    public PhieuDatSanEntity createWalkIn(CreatePhieuDatRequest request, Consumer<PhieuDatSanEntity> details) {
+        return reserve(request, WALK_IN_PAST_TOLERANCE, booking -> {
+            booking.setNguonDat(NGUON_TAI_SAN);
+            booking.setTrangThai(DA_XAC_NHAN);
+            details.accept(booking);
+        });
+    }
+
+    private PhieuDatSanEntity reserve(CreatePhieuDatRequest request, Duration pastTolerance, Consumer<PhieuDatSanEntity> customize) {
+        validateRequest(request, pastTolerance);
 
         var san = sanRepo.findById(request.getMaSan())
                 .orElseThrow(() -> new ResponseStatusException(
@@ -112,12 +138,11 @@ public class PhieuDatSanService {
             PhieuDatSanEntity booking = new PhieuDatSanEntity();
             booking.setMaPhieuDat("PD_" + UUID.randomUUID());
             booking.setMaSan(request.getMaSan());
-            booking.setMaNguoiDung(username);
             booking.setBatDau(request.getBatDau());
             booking.setKetThuc(request.getKetThuc());
             booking.setNgayLap(LocalDateTime.now());
             booking.setTongTien(san.getGia() * (minutes / 60.0));
-            booking.setTrangThai(CHO_XAC_NHAN);
+            customize.accept(booking);
 
             return phieuDatSanRepo.save(booking);
         } finally {
@@ -145,7 +170,7 @@ public class PhieuDatSanService {
         phieuDatSanRepo.deleteById(maPhieuDat);
     }
 
-    private void validateRequest(CreatePhieuDatRequest request) {
+    private void validateRequest(CreatePhieuDatRequest request, Duration pastTolerance) {
         if (request == null ||
                 request.getMaSan() == null || request.getBatDau() == null ||
                 request.getKetThuc() == null ||
@@ -155,7 +180,7 @@ public class PhieuDatSanService {
                     "Thông tin đặt sân không hợp lệ"
             );
         }
-        if (request.getBatDau().isBefore(LocalDateTime.now().minus(PAST_TOLERANCE))) {
+        if (request.getBatDau().isBefore(LocalDateTime.now().minus(pastTolerance))) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không thể đặt khung giờ trong quá khứ");
         }
         if (Duration.between(request.getBatDau(), request.getKetThuc()).compareTo(MAX_BOOKING_DURATION) > 0) {
