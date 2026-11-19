@@ -52,7 +52,8 @@ public class SecurityConfig {
                                 "/user/get-so-luong-user",
                                 "/anh-san",
                                 "/anh-san/*",
-                                "/phieu-dat-san/theo-ngay"
+                                "/phieu-dat-san/theo-ngay",
+                                "/danh-gia/cum-san/*"
                         ).permitAll()
                         .requestMatchers("/management/admin/**").hasRole("ADMIN")
                         .requestMatchers("/management/**").hasAnyRole("ADMIN", "OWNER")

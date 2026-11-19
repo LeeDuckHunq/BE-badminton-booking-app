@@ -45,6 +45,29 @@ public class CumSanEntity {
     /** Số sân đang hoạt động (tính khi trả về, không lưu DB). */
     @Transient
     private Integer soSan;
+
+    /** Điểm đánh giá trung bình 1..5 (null nếu chưa có), tính khi trả về. */
+    @Transient
+    private Double diemDanhGia;
+
+    @Transient
+    private Integer soDanhGia;
+
+    public Double getDiemDanhGia() {
+        return diemDanhGia;
+    }
+
+    public void setDiemDanhGia(Double diemDanhGia) {
+        this.diemDanhGia = diemDanhGia;
+    }
+
+    public Integer getSoDanhGia() {
+        return soDanhGia;
+    }
+
+    public void setSoDanhGia(Integer soDanhGia) {
+        this.soDanhGia = soDanhGia;
+    }
     //region constructor
 
     public CumSanEntity() {
