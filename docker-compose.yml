@@ -1,0 +1,14 @@
+# MongoDB cho môi trường dev/test local.
+#   docker compose up -d      → chạy Mongo ở localhost:27017
+#   docker compose down -v    → dừng và xoá sạch dữ liệu
+services:
+  mongo:
+    image: mongo:7
+    container_name: smashzone-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - smashzone-mongo-data:/data/db
+
+volumes:
+  smashzone-mongo-data:
