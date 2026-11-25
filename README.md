@@ -85,7 +85,7 @@ Script tạo 4 cụm sân, 12 sân, voucher, đơn đặt, hoá đơn, tin nhắ
 | Vai trò | Tài khoản | Mật khẩu | Ghi chú |
 |---|---|---|---|
 | Admin | `admin` | giá trị `ADMIN_PASSWORD` | Toàn quyền dashboard |
-| Chủ sân | `hoanganh` | `owner1234` | Cụm Quận 1, Phú Nhuận |
+| Chủ sân | `hoanganh` | `owner1234` | Cụm Quận 1 (có giá sáng sớm, cao điểm, cuối tuần), Phú Nhuận |
 | Chủ sân | `tanbinh` | `owner1234` | Cụm Tân Bình, Thủ Đức |
 | Khách | `tuananh` | `secret12` | Có đơn chờ duyệt, đã xác nhận, hoàn thành (chưa đánh giá), đã huỷ; có voucher, yêu thích, tin nhắn |
 | Khách | `minhkhang` | `secret12` | Trưởng nhóm "CLB Cầu Lông Quận 1 Chill", chủ trận đôi tối mai (có 1 người chờ duyệt) |
@@ -103,6 +103,10 @@ docker compose down -v && docker compose up -d
 # khởi động lại BE (bước 3), rồi:
 node scripts/seed-demo.mjs
 ```
+
+## Giá theo khung giờ
+
+Mỗi sân có `gia` (giá mặc định mỗi giờ) và `bangGia`: danh sách khung `{ thu: [1..7], tuGio, denGio, gia, ten }` (1 = Thứ Hai … 7 = Chủ Nhật, giờ theo bước 30 phút, `denGio` có thể là `24:00`). Các khung trong cùng một ngày không được chồng giờ. Tiền một lượt đặt được tính theo từng phút: phút nào thuộc khung nào thì theo giá khung đó, còn lại theo giá mặc định (`PricingService`). Web, app, dashboard tính lại y hệt để hiển thị.
 
 ## 5. Chạy test
 
@@ -165,7 +169,8 @@ Gửi token qua header `Authorization: Bearer <token>` (lấy từ `POST /login`
 | Method | Đường dẫn | |
 |---|---|---|
 | GET | `/management/me`, `/management/overview` | Hồ sơ, số liệu tổng quan |
-| GET / POST / PUT / DELETE | `/management/venues`, `/management/courts` | Cụm sân, sân |
+| GET / POST / PUT / DELETE | `/management/venues`, `/management/courts` | Cụm sân, sân (kèm `bangGia`: giá theo khung giờ) |
+| POST | `/management/courts/{id}/copy-pricing` | Áp dụng bảng giá của sân cho các sân khác cùng cụm |
 | GET / POST | `/management/bookings` | Danh sách đơn, đặt lịch hộ khách |
 | GET / PATCH | `/management/bookings/{id}`, `/management/bookings/{id}/status` | Chi tiết, đổi trạng thái đơn |
 | GET | `/management/timeline?date=&venue=` | Lịch sân theo ngày |

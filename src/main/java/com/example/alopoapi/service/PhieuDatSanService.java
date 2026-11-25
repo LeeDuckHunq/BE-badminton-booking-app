@@ -141,7 +141,7 @@ public class PhieuDatSanService {
             booking.setBatDau(request.getBatDau());
             booking.setKetThuc(request.getKetThuc());
             booking.setNgayLap(LocalDateTime.now());
-            booking.setTongTien(san.getGia() * (minutes / 60.0));
+            booking.setTongTien(PricingService.total(san, request.getBatDau(), request.getKetThuc()));
             customize.accept(booking);
 
             return phieuDatSanRepo.save(booking);

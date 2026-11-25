@@ -71,6 +71,14 @@ public class ManagementController {
         return ResponseEntity.ok(managementService.saveCourt(request, authentication, id));
     }
 
+    /** Áp dụng bảng giá của sân {id} cho các sân khác cùng cụm: {maSan: [...], kemGiaMacDinh: bool} */
+    @PostMapping("/courts/{id}/copy-pricing")
+    public ResponseEntity<?> copyPricing(@PathVariable String id, @RequestBody Map<String, Object> body, Authentication authentication) {
+        Object raw = body.get("maSan");
+        java.util.List<String> targets = raw instanceof java.util.List<?> list ? list.stream().map(String::valueOf).toList() : java.util.List.of();
+        return ResponseEntity.ok(managementService.copyPricing(id, targets, Boolean.TRUE.equals(body.get("kemGiaMacDinh")), authentication));
+    }
+
     @DeleteMapping("/courts/{id}")
     public ResponseEntity<?> deleteCourt(@PathVariable String id, Authentication authentication) {
         managementService.deleteCourt(id, authentication);

@@ -54,7 +54,7 @@ public class CumSanService {
         Map<String, DoubleSummaryStatistics> stats = courts.stream()
                 .filter(SanEntity::isTrangThai)
                 .filter(court -> court.getMaCumSan() != null)
-                .collect(Collectors.groupingBy(SanEntity::getMaCumSan, Collectors.summarizingDouble(SanEntity::getGia)));
+                .collect(Collectors.groupingBy(SanEntity::getMaCumSan, Collectors.summarizingDouble(PricingService::minRate)));
         for (CumSanEntity venue : venues) {
             DoubleSummaryStatistics s = stats.get(venue.getMaCumSan());
             venue.setSoSan(s == null ? 0 : (int) s.getCount());

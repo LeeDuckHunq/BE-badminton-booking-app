@@ -42,6 +42,17 @@ await call('POST', '/management/admin/users', { token: admin, body: { username: 
 
 // ── Cụm sân + sân ───────────────────────────────────────────────────────
 const img = (id) => `https://images.unsplash.com/${id}?w=1200&q=70&auto=format&fit=crop`;
+// Bảng giá theo khung giờ (giá mỗi giờ). Thứ: 1 = Thứ Hai … 7 = Chủ Nhật.
+const WEEKDAYS = [1, 2, 3, 4, 5], WEEKEND = [6, 7]
+const pricing = {
+  'Cụm Sân Cầu Lông Quận 1': (gia) => [
+    { ten: 'Sáng sớm', thu: [...WEEKDAYS, ...WEEKEND], tuGio: '05:00', denGio: '07:00', gia: gia - 20000 },
+    { ten: 'Giờ cao điểm', thu: WEEKDAYS, tuGio: '17:00', denGio: '22:00', gia: gia + 40000 },
+    { ten: 'Cuối tuần', thu: WEEKEND, tuGio: '07:00', denGio: '22:00', gia: gia + 20000 },
+  ],
+  'Sân Cầu Lông Tân Bình Sport': (gia) => [{ ten: 'Giờ cao điểm', thu: WEEKDAYS, tuGio: '17:30', denGio: '21:30', gia: gia + 30000 }],
+  'CLB Cầu Lông Phú Nhuận Premium': (gia) => [{ ten: 'Tối cuối tuần', thu: WEEKEND, tuGio: '17:00', denGio: '23:00', gia: gia + 50000 }],
+}
 const venues = [
   { tenCumSan: 'Cụm Sân Cầu Lông Quận 1', diaChi: '12 Nguyễn Huệ, P. Bến Nghé, Quận 1, TP.HCM', gioMoCua: '05:00', gioDongCua: '23:00', sDT: '0283 123 456', ownerUsername: 'hoanganh', courts: [['Sân 1', 100000], ['Sân 2', 100000], ['Sân 3', 120000], ['Sân 4', 120000]], image: img('photo-1626224583764-f87db24ac4ea') },
   { tenCumSan: 'Sân Cầu Lông Tân Bình Sport', diaChi: '45 Hoàng Hoa Thám, P.13, Tân Bình, TP.HCM', gioMoCua: '06:00', gioDongCua: '22:30', sDT: '0283 999 888', ownerUsername: 'tanbinh', courts: [['Sân A', 120000], ['Sân B', 120000], ['Sân C', 140000]], image: img('photo-1613918431703-aa50889e3be8') },
@@ -53,7 +64,7 @@ for (const v of venues) {
   const created = await call('POST', '/management/venues', { token: admin, body: { tenCumSan: v.tenCumSan, diaChi: v.diaChi, gioMoCua: v.gioMoCua, gioDongCua: v.gioDongCua, sDT: v.sDT, ownerUsername: v.ownerUsername, trangThai: 'ACTIVE' } });
   ids[v.tenCumSan] = { venue: created.maCumSan, courts: [] };
   for (const [tenSan, gia] of v.courts) {
-    const c = await call('POST', '/management/courts', { token: admin, body: { tenSan, maCumSan: created.maCumSan, gia, trangThai: true } });
+    const c = await call('POST', '/management/courts', { token: admin, body: { tenSan, maCumSan: created.maCumSan, gia, trangThai: true, bangGia: pricing[v.tenCumSan]?.(gia) || [] } });
     ids[v.tenCumSan].courts.push(c.maSan);
   }
   mongo(`db.HinhAnhSan.insertOne({_id:'IMG_${created.maCumSan}', duongDanHinhAnh:'${v.image}', maCumSan:'${created.maCumSan}'})`);
@@ -94,8 +105,8 @@ await call('PATCH', `/management/bookings/${confirmed.maPhieuDat}/status`, { tok
 
 const bill = img('photo-1556742049-0cfed4f6a45d');
 mongo(`db.HoaDon.insertMany([
-  {_id:'HD_${pending.maPhieuDat}', maPhieuDat:'${pending.maPhieuDat}', maKhuyenMai:'NEWBIE15', tongTien:127500, ngayLap:new Date(), billThanhToan:'${bill}'},
-  {_id:'HD_${confirmed.maPhieuDat}', maPhieuDat:'${confirmed.maPhieuDat}', maKhuyenMai:null, tongTien:300000, ngayLap:new Date(${now - day}), billThanhToan:'${bill}'}
+  {_id:'HD_${pending.maPhieuDat}', maPhieuDat:'${pending.maPhieuDat}', maKhuyenMai:'NEWBIE15', tongTien:${Math.round(pending.tongTien * 0.85)}, ngayLap:new Date(), billThanhToan:'${bill}'},
+  {_id:'HD_${confirmed.maPhieuDat}', maPhieuDat:'${confirmed.maPhieuDat}', maKhuyenMai:null, tongTien:${confirmed.tongTien}, ngayLap:new Date(${now - day}), billThanhToan:'${bill}'}
 ])`);
 
 // ── Đơn quá khứ (chèn thẳng) ───────────────────────────────────────────

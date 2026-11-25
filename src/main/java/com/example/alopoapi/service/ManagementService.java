@@ -284,8 +284,31 @@ public class ManagementService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Giá sân không hợp lệ");
         }
         court.setGia(request.getGia());
+        if (creating || request.bangGiaProvided()) {
+            court.setBangGia(PricingService.normalize(request.getBangGia()));
+        }
         court.setTrangThai(creating || request.isTrangThai());
         return sanRepo.save(court);
+    }
+
+    /** Áp dụng bảng giá của một sân cho các sân khác (cùng cụm) mà mình quản lý. */
+    public List<SanEntity> copyPricing(String id, List<String> targets, boolean includeBasePrice, Authentication authentication) {
+        SanEntity source = requireCourt(id, authentication);
+        if (targets == null || targets.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chọn ít nhất một sân để áp dụng");
+        }
+        List<SanEntity> updated = new java.util.ArrayList<>();
+        for (String targetId : targets) {
+            if (targetId == null || targetId.equals(id)) continue;
+            SanEntity target = requireCourt(targetId, authentication);
+            if (!java.util.Objects.equals(target.getMaCumSan(), source.getMaCumSan())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ áp dụng được cho sân trong cùng cụm sân");
+            }
+            target.setBangGia(PricingService.normalize(source.getBangGia()));
+            if (includeBasePrice) target.setGia(source.getGia());
+            updated.add(target);
+        }
+        return sanRepo.saveAll(updated);
     }
 
     public void deleteCourt(String id, Authentication authentication) {

@@ -4,6 +4,9 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Document(collection = "San")
 public class SanEntity {
 
@@ -21,6 +24,10 @@ public class SanEntity {
 
     @Field("maCumSan")
     private String maCumSan;
+
+    /** Giá theo khung giờ; giờ không thuộc khung nào tính theo {@code gia}. */
+    @Field("bangGia")
+    private List<KhungGia> bangGia;
 
     //region constructor
 
@@ -78,5 +85,17 @@ public class SanEntity {
         this.maCumSan = maCumSan;
     }
 
+    public List<KhungGia> getBangGia() {
+        return bangGia == null ? new ArrayList<>() : bangGia;
+    }
+
+    public void setBangGia(List<KhungGia> bangGia) {
+        this.bangGia = bangGia;
+    }
+
+    /** true nếu request có gửi trường bangGia (để PUT cũ không có trường này không xoá mất bảng giá). */
+    public boolean bangGiaProvided() {
+        return bangGia != null;
+    }
     //endregion
 }
