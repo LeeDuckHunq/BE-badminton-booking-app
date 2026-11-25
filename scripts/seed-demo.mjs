@@ -61,6 +61,7 @@ for (const v of venues) {
 const q1 = ids['Cụm Sân Cầu Lông Quận 1'];
 const tb = ids['Sân Cầu Lông Tân Bình Sport'];
 const pn = ids['CLB Cầu Lông Phú Nhuận Premium'];
+const td = ids['Cụm Sân Thủ Đức Center'];
 
 // ── Voucher ────────────────────────────────────────────────────────────
 const day = 86400000;
@@ -86,9 +87,9 @@ const ml = await login('mailinh', 'secret12');
 const pending = await call('POST', '/phieu-dat-san/create', { token: ta, body: { maSan: q1.courts[1], batDau: d(1, 8), ketThuc: d(1, 9, 30) } });
 const confirmed = await call('POST', '/phieu-dat-san/create', { token: ta, body: { maSan: pn.courts[0], batDau: d(4, 18), ketThuc: d(4, 20) } });
 await call('POST', '/phieu-dat-san/create', { token: mk, body: { maSan: q1.courts[0], batDau: d(1, 7), ketThuc: d(1, 8) } });
-await call('POST', '/phieu-dat-san/create', { token: mk, body: { maSan: q1.courts[0], batDau: d(1, 17), ketThuc: d(1, 19) } });
+const mkEvening = await call('POST', '/phieu-dat-san/create', { token: mk, body: { maSan: q1.courts[0], batDau: d(1, 17), ketThuc: d(1, 19) } });
 await call('POST', '/phieu-dat-san/create', { token: ml, body: { maSan: q1.courts[3], batDau: d(1, 9), ketThuc: d(1, 10, 30) } });
-await call('POST', '/phieu-dat-san/create', { token: ml, body: { maSan: tb.courts[0], batDau: d(2, 19), ketThuc: d(2, 21) } });
+const mlTanBinh = await call('POST', '/phieu-dat-san/create', { token: ml, body: { maSan: tb.courts[0], batDau: d(2, 19), ketThuc: d(2, 21) } });
 await call('PATCH', `/management/bookings/${confirmed.maPhieuDat}/status`, { token: admin, body: { status: 'DA_XAC_NHAN' } });
 
 const bill = img('photo-1556742049-0cfed4f6a45d');
@@ -132,10 +133,58 @@ await call('POST', '/danh-gia', { token: ml, body: { maPhieuDat: 'PD_8030bbbb-00
 await call('POST', '/danh-gia', { token: mk, body: { maPhieuDat: 'PD_8040cccc-0000-4000-8000-000000000005', soSao: 5, noiDung: 'Giá hợp lý, sân thoáng, sẽ quay lại!' } });
 // Đơn PD_8102a7c1-...0001 của tuananh (Hoàn thành) để trống, dùng để test viết đánh giá.
 
+// ── Hội nhóm & ghép trận ───────────────────────────────────────────────
+for (const u of [
+  { username: 'quochuy', password: 'secret12', fullName: 'Phạm Quốc Huy', email: 'quochuy@gmail.com', phoneNumber: '0909 456 789' },
+  { username: 'thanhtruc', password: 'secret12', fullName: 'Võ Thanh Trúc', email: 'thanhtruc@gmail.com', phoneNumber: '0937 111 222' },
+  { username: 'ducminh', password: 'secret12', fullName: 'Đỗ Đức Minh', email: 'ducminh@gmail.com', phoneNumber: '0918 333 444' },
+]) await call('POST', '/register', { body: u });
+const qh = await login('quochuy', 'secret12');
+const tt = await login('thanhtruc', 'secret12');
+const dm = await login('ducminh', 'secret12');
+const pause = () => new Promise((r) => setTimeout(r, 30));
+
+const g1 = await call('POST', '/nhom', { token: mk, body: { tenNhom: 'CLB Cầu Lông Quận 1 Chill', moTa: 'Đánh đôi giao lưu tối thứ 3, 5, 7 ở Quận 1. Vui vẻ là chính, không cay cú 😄', khuVuc: 'Quận 1, TP.HCM', trinhDo: 'TB', congKhai: true, mau: 0 } });
+for (const t of [ta, ml, qh]) await call('POST', '/nhom/tham-gia-bang-ma', { token: t, body: { maMoi: g1.maMoi } });
+await call('POST', `/nhom/${g1.maNhom}/vai-tro/mailinh`, { token: mk, body: { vaiTro: 'PHO_NHOM' } });
+await call('POST', `/nhom/${g1.maNhom}/tham-gia`, { token: dm, body: { loiNhan: 'Mình ở Thủ Đức nhưng hay qua Q1 chơi, cho mình vào với nhé!' } });
+
+const g2 = await call('POST', '/nhom', { token: ml, body: { tenNhom: 'Hội Smash Tân Bình', moTa: 'Nhóm kín cho anh em đánh TB+ trở lên, đánh nhanh – smash mạnh.', khuVuc: 'Tân Bình, TP.HCM', trinhDo: 'TB_KHA', congKhai: false, mau: 3 } });
+await call('POST', '/nhom/tham-gia-bang-ma', { token: tt, body: { maMoi: g2.maMoi } });
+
+const g3 = await call('POST', '/nhom', { token: dm, body: { tenNhom: 'Team Giao Lưu Thủ Đức', moTa: 'Dành cho người mới và trình yếu – TB. Có người hướng dẫn kỹ thuật cơ bản.', khuVuc: 'Thủ Đức, TP.HCM', trinhDo: 'YEU', congKhai: true, mau: 4 } });
+await call('POST', `/nhom/${g3.maNhom}/tham-gia`, { token: ta, body: { loiNhan: 'Cho em vào học hỏi với ạ' } });
+
+for (const [tok, text] of [
+  [mk, 'Tối mai 17h sân 1 Quận 1 nha mọi người, mình đặt sân rồi!'],
+  [ta, 'Ok anh, em vào điểm danh rồi 🙌'],
+  [ml, 'Nhớ mang cầu nha, lần trước hết cầu giữa chừng 😂'],
+  [qh, 'Mình mang 1 ống Thành Công nhé'],
+]) { await call('POST', `/nhom/${g1.maNhom}/tin-nhan`, { token: tok, body: { noiDung: text } }); await pause(); }
+await call('POST', `/nhom/${g2.maNhom}/tin-nhan`, { token: tt, body: { noiDung: 'Thứ 6 này ai rảnh đánh không?' } });
+
+const bank = { nganHang: 'MB', soTaiKhoan: '0901234567', chuTaiKhoan: 'LE MINH KHANG' };
+const m1 = await call('POST', '/tran', { token: mk, body: { maPhieuDat: mkEvening.maPhieuDat, maNhom: g1.maNhom, tieuDe: 'Kèo đôi tối mai – Quận 1', ghiChu: 'Ưu tiên thành viên nhóm, còn chỗ thì mời bạn vãng lai. Cầu nhóm lo.', kieuChoi: 'DOI', soNguoiToiDa: 4, trinhDoTu: 'TB', trinhDoDen: 'TB_KHA', congKhai: true, ...bank } });
+await call('POST', `/tran/${m1.maTran}/tham-gia`, { token: ta });
+await call('POST', `/tran/${m1.maTran}/tham-gia`, { token: ml });
+await call('POST', `/tran/${m1.maTran}/thanh-toan`, { token: ml, body: { billUrl: bill } });
+await call('POST', `/tran/${m1.maTran}/thanh-toan/mailinh`, { token: mk, body: { daTra: true } });
+await call('POST', `/tran/${m1.maTran}/thanh-toan`, { token: ta, body: { billUrl: bill } });
+await call('POST', `/tran/${m1.maTran}/tham-gia`, { token: tt, body: { loiNhan: 'Mình đánh TB+, tối mai rảnh, cho mình 1 slot nhé!', trinhDo: 'TB_KHA' } });
+
+const m2 = await call('POST', '/tran', { token: ml, body: { maPhieuDat: mlTanBinh.maPhieuDat, tieuDe: 'Tìm 2 bạn đánh đôi TB+', ghiChu: 'Sân A Tân Bình, có máy lạnh. Đánh vui, không tính điểm.', kieuChoi: 'DOI', soNguoiToiDa: 4, trinhDoTu: 'TB_KHA', trinhDoDen: 'KHA', nganHang: 'VCB', soTaiKhoan: '1012345678', chuTaiKhoan: 'TRAN MAI LINH' } });
+await call('POST', `/tran/${m2.maTran}/tham-gia`, { token: qh, body: { loiNhan: 'Mình TB+, đánh đôi nam nữ được', trinhDo: 'TB_KHA' } });
+await call('POST', `/tran/${m2.maTran}/duyet/quochuy`, { token: ml, body: { dongY: true } });
+
+const dmBooking = await call('POST', '/phieu-dat-san/create', { token: dm, body: { maSan: td.courts[0], batDau: d(3, 18), ketThuc: d(3, 20) } });
+await call('POST', '/tran', { token: dm, body: { maPhieuDat: dmBooking.maPhieuDat, maNhom: g3.maNhom, tieuDe: 'Giao lưu xoay vòng cho người mới', ghiChu: 'Xoay vòng đánh đôi, có hướng dẫn cầm vợt và di chuyển cơ bản.', kieuChoi: 'GIAO_LUU', soNguoiToiDa: 8, trinhDoTu: 'YEU', trinhDoDen: 'TB', congKhai: true, chiPhiMoiNguoi: 25000 } });
+
 console.log(`
 Đã tạo dữ liệu demo.
   Admin   : ${ADMIN_USER} / (mật khẩu ADMIN_PASSWORD bạn đặt khi chạy BE)
   Chủ sân : hoanganh / owner1234  (Quận 1, Phú Nhuận)
             tanbinh  / owner1234  (Tân Bình, Thủ Đức)
   Khách   : tuananh / secret12, minhkhang / secret12, mailinh / secret12
+            quochuy / secret12, thanhtruc / secret12, ducminh / secret12
+  Nhóm    : "${g1.tenNhom}" (mã mời ${g1.maMoi}), "${g2.tenNhom}" (riêng tư, mã ${g2.maMoi}), "${g3.tenNhom}"
 `);

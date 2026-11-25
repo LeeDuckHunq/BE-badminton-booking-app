@@ -11,4 +11,10 @@ public interface TinNhanRepo extends MongoRepository<TinNhanEntity, String> {
 
     List<TinNhanEntity>
     findByMaPhongChatOrderByThoiGianGuiAsc(String maPhongChat);
+
+    /** 200 tin mới nhất (chat nhóm). */
+    List<TinNhanEntity>
+    findTop200ByMaPhongChatOrderByThoiGianGuiDesc(String maPhongChat);
+
+    void deleteByMaPhongChat(String maPhongChat);
 }
