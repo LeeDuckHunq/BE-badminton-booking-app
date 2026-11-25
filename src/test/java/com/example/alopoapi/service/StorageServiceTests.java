@@ -73,4 +73,19 @@ class StorageServiceTests {
         org.junit.jupiter.api.Assertions.assertFalse(
                 service.isOwnedPaymentProofUrl(base + "../customer-" + uuid + ".png", "customer"));
     }
+
+    @Test
+    void newSecretKeyIsSentOnlyAsApiKey() {
+        var headers = StorageService.authHeaders("sb_secret_abc123");
+        assertEquals("sb_secret_abc123", headers.get("apikey"));
+        assertEquals(false, headers.containsKey("Authorization"));
+    }
+
+    @Test
+    void legacyServiceRoleJwtIsAlsoSentAsBearer() {
+        String jwt = "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIn0.sig";
+        var headers = StorageService.authHeaders(jwt);
+        assertEquals(jwt, headers.get("apikey"));
+        assertEquals("Bearer " + jwt, headers.get("Authorization"));
+    }
 }

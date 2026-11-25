@@ -13,7 +13,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -63,14 +65,13 @@ public class StorageService {
                 imageType.extension()
         );
 
-        HttpRequest request = HttpRequest.newBuilder()
+        HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create("%s/storage/v1/object/%s/%s".formatted(supabaseUrl, bucket, objectPath)))
-                .header("apikey", serviceRoleKey)
-                .header("Authorization", "Bearer " + serviceRoleKey)
                 .header("Content-Type", imageType.contentType())
                 .header("x-upsert", "false")
-                .POST(HttpRequest.BodyPublishers.ofByteArray(content))
-                .build();
+                .POST(HttpRequest.BodyPublishers.ofByteArray(content));
+        authHeaders(serviceRoleKey).forEach(builder::header);
+        HttpRequest request = builder.build();
 
         try {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -88,6 +89,24 @@ public class StorageService {
         }
 
         return "%s/storage/v1/object/public/%s/%s".formatted(supabaseUrl, bucket, objectPath);
+    }
+
+    /**
+     * Header xác thực gửi tới Supabase.
+     * Key kiểu mới ({@code sb_secret_...}) chỉ gửi qua {@code apikey}, gateway của Supabase tự đổi sang quyền service_role.
+     * Key legacy service_role (JWT) gửi thêm {@code Authorization: Bearer}.
+     */
+    static Map<String, String> authHeaders(String key) {
+        Map<String, String> headers = new LinkedHashMap<>();
+        headers.put("apikey", key);
+        if (isLegacyJwt(key)) {
+            headers.put("Authorization", "Bearer " + key);
+        }
+        return headers;
+    }
+
+    private static boolean isLegacyJwt(String key) {
+        return key != null && key.startsWith("eyJ") && key.chars().filter(c -> c == '.').count() == 2;
     }
 
     /**
