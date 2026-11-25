@@ -55,7 +55,9 @@ public class SecurityConfig {
                                 "/phieu-dat-san/theo-ngay",
                                 "/danh-gia/cum-san/*",
                                 "/tran/tim-kiem",
-                                "/nhom/kham-pha"
+                                "/nhom/kham-pha",
+                                "/app/phien-ban",
+                                "/app/phien-ban/lich-su"
                         ).permitAll()
                         .requestMatchers("/management/admin/**").hasRole("ADMIN")
                         .requestMatchers("/management/**").hasAnyRole("ADMIN", "OWNER")
