@@ -73,6 +73,7 @@ public class BanBeService {
             UserEntity other = userRepo.findByUsernameIgnoreCase(k.other(me)).filter(UserEntity::isActive).orElse(null);
             if (other == null) continue;
             Map<String, Object> item = profile(other);
+            item.put("quanHe", relationOf(k, me));
             if (k.isFriend()) {
                 item.put("tuNgay", k.getNgayKetBan());
                 friends.add(item);
