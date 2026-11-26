@@ -11,6 +11,7 @@ import com.example.alopoapi.repository.SanRepo;
 import com.example.alopoapi.repository.UserRepo;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -139,6 +140,13 @@ public class DanhGiaService {
         }).toList();
     }
 
+    private ThongBaoService thongBao;
+
+    @Autowired(required = false)
+    void setThongBaoService(ThongBaoService thongBao) {
+        this.thongBao = thongBao;
+    }
+
     /** Chủ sân / admin trả lời công khai. Nội dung rỗng = xoá trả lời. */
     public DanhGiaEntity reply(String id, String text, Authentication authentication) {
         DanhGiaEntity review = requireManaged(id, authentication);
@@ -151,9 +159,15 @@ public class DanhGiaService {
             review.setNgayPhanHoi(null);
             review.setNguoiPhanHoi(null);
         } else {
+            boolean first = review.getPhanHoi() == null;
             review.setPhanHoi(reply);
             review.setNgayPhanHoi(LocalDateTime.now());
             review.setNguoiPhanHoi(authentication.getName());
+            if (first && thongBao != null) {
+                thongBao.notify(review.getMaNguoiDung(), com.example.alopoapi.entity.ThongBaoEntity.DANH_GIA_PHAN_HOI,
+                        "Chủ sân đã trả lời đánh giá của bạn", reply.length() > 140 ? reply.substring(0, 140) + "…" : reply,
+                        com.example.alopoapi.entity.ThongBaoEntity.REVIEW, review.getMaCumSan());
+            }
         }
         return danhGiaRepo.save(review);
     }

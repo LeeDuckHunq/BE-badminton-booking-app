@@ -17,6 +17,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -46,6 +47,13 @@ public class HoaDonService {
         this.storageService = storageService;
         this.managementService = managementService;
         this.mongoTemplate = mongoTemplate;
+    }
+
+    private ThongBaoService thongBao;
+
+    @Autowired(required = false)
+    void setThongBaoService(ThongBaoService thongBao) {
+        this.thongBao = thongBao;
     }
 
     /**
@@ -103,7 +111,11 @@ public class HoaDonService {
         );
 
         try {
-            return mongoTemplate.insert(hoaDon);
+            HoaDonEntity saved = mongoTemplate.insert(hoaDon);
+            if (thongBao != null) {
+                thongBao.invoiceSubmitted(booking, Math.round(saved.getTongTien()));
+            }
+            return saved;
         } catch (DuplicateKeyException exception) {
             if (claimedVoucher != null) {
                 releaseVoucher(claimedVoucher.getId(), maHoaDon);

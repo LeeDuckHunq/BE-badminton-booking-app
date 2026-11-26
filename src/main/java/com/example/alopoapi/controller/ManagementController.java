@@ -125,6 +125,20 @@ public class ManagementController {
         return ResponseEntity.ok(managementService.updateBookingStatus(id, request.get("status"), authentication));
     }
 
+    /** Đổi sân cho lượt đặt (sân cũ có sự cố). Body: {maSan, lyDo}. */
+    @PatchMapping("/bookings/{id}/court")
+    public ResponseEntity<?> changeCourt(@PathVariable String id, @RequestBody Map<String, String> request, Authentication authentication) {
+        return ResponseEntity.ok(managementService.changeCourt(id, request.get("maSan"), request.get("lyDo"), authentication));
+    }
+
+    /** Xử lý yêu cầu huỷ của khách. Body: {accept: true|false, ghiChu}. */
+    @PostMapping("/bookings/{id}/cancel-request")
+    public ResponseEntity<?> handleCancelRequest(@PathVariable String id, @RequestBody Map<String, Object> request, Authentication authentication) {
+        boolean accept = Boolean.TRUE.equals(request.get("accept")) || "true".equals(String.valueOf(request.get("accept")));
+        Object note = request.get("ghiChu");
+        return ResponseEntity.ok(managementService.handleCancelRequest(id, accept, note == null ? null : note.toString(), authentication));
+    }
+
     @GetMapping("/admin/users")
     public ResponseEntity<?> users() {
         return ResponseEntity.ok(userService.getManagedUsers());

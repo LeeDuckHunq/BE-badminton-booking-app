@@ -8,6 +8,7 @@ import com.example.alopoapi.repository.PhongChatRepo;
 import com.example.alopoapi.repository.ThanhVienPhongChatRepo;
 import com.example.alopoapi.repository.TinNhanRepo;
 import com.example.alopoapi.repository.UserRepo;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -43,6 +44,13 @@ public class ChatService {
         this.tvRepo = tvRepo;
         this.tinNhanRepo = tinNhanRepo;
         this.userRepo = userRepo;
+    }
+
+    private ThongBaoService thongBao;
+
+    @Autowired(required = false)
+    void setThongBaoService(ThongBaoService thongBao) {
+        this.thongBao = thongBao;
     }
 
     /** Lấy hoặc tạo phòng chat riêng giữa người đang đăng nhập và {@code otherUsername}. */
@@ -131,6 +139,11 @@ public class ChatService {
     }
 
     public void sendMessage(SendMessageDTO dto, String username) {
+        sendMessage(dto, username, true);
+    }
+
+    /** {@code notify=false}: không tạo thông báo tin nhắn (khi nghiệp vụ gọi đã có thông báo riêng). */
+    public void sendMessage(SendMessageDTO dto, String username, boolean notify) {
         if (dto == null || dto.getMaPhongChat() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thiếu phòng chat");
         }
@@ -156,6 +169,13 @@ public class ChatService {
         phong.setTinNhanCuoi(noiDung);
         phong.setThoiGianTinNhanCuoi(now);
         phongChatRepo.save(phong);
+
+        if (notify && thongBao != null) {
+            tvRepo.findByMaPhongChat(dto.getMaPhongChat()).stream()
+                    .map(ThanhVienPhongChatEntity::getUsername)
+                    .filter(u -> !u.equalsIgnoreCase(username))
+                    .forEach(u -> thongBao.message(u, username, noiDung));
+        }
     }
 
     private void requireMember(String maPhongChat, String username) {

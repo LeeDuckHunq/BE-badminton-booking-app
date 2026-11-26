@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/phieu-dat-san")
@@ -38,6 +39,18 @@ public class PhieuDatSanController {
     public ResponseEntity<?> getPhieuDatForUser(@PathVariable String username, Authentication authentication) {
         AccessGuard.requireSelfOrAdmin(authentication, username);
         return ResponseEntity.ok(phieuDatSanService.getPhieuDatForUser(username));
+    }
+
+    /** Khách xin huỷ lượt đã thanh toán / đã xác nhận (trước giờ chơi ≥ 30 phút). Body: {lyDo}. */
+    @PostMapping("/{maPhieuDat}/yeu-cau-huy")
+    public ResponseEntity<?> requestCancel(@PathVariable String maPhieuDat, @RequestBody Map<String, String> body, Authentication authentication) {
+        return ResponseEntity.ok(phieuDatSanService.requestCancel(maPhieuDat, AccessGuard.username(authentication), body == null ? null : body.get("lyDo")));
+    }
+
+    /** Khách rút lại yêu cầu huỷ khi chủ sân chưa xử lý. */
+    @DeleteMapping("/{maPhieuDat}/yeu-cau-huy")
+    public ResponseEntity<?> withdrawCancel(@PathVariable String maPhieuDat, Authentication authentication) {
+        return ResponseEntity.ok(phieuDatSanService.withdrawCancel(maPhieuDat, AccessGuard.username(authentication)));
     }
 
     @DeleteMapping("/delete-phieu-dat/{maPhieuDat}")

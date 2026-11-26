@@ -55,6 +55,30 @@ public class PhieuDatSanEntity {
     @Field("nguoiTao")
     private String nguoiTao;
 
+    /** Yêu cầu huỷ của khách với đơn đã thanh toán / xác nhận: CHO_XU_LY, DONG_Y, TU_CHOI (null = chưa có). */
+    @Field("yeuCauHuy")
+    private String yeuCauHuy;
+
+    @Field("lyDoHuy")
+    private String lyDoHuy;
+
+    @Field("ngayYeuCauHuy")
+    private LocalDateTime ngayYeuCauHuy;
+
+    /** Ghi chú của chủ sân khi đồng ý / từ chối yêu cầu huỷ. */
+    @Field("phanHoiHuy")
+    private String phanHoiHuy;
+
+    /** Chủ sân chuyển lượt sang sân khác (sân cũ có sự cố). */
+    @Field("maSanCu")
+    private String maSanCu;
+
+    @Field("lyDoDoiSan")
+    private String lyDoDoiSan;
+
+    @Field("ngayDoiSan")
+    private LocalDateTime ngayDoiSan;
+
     //region constructor
 
     public PhieuDatSanEntity() {
@@ -187,6 +211,20 @@ public class PhieuDatSanEntity {
     public void setNguoiTao(String nguoiTao) {
         this.nguoiTao = nguoiTao;
     }
+    public String getYeuCauHuy() { return yeuCauHuy; }
+    public void setYeuCauHuy(String yeuCauHuy) { this.yeuCauHuy = yeuCauHuy; }
+    public String getLyDoHuy() { return lyDoHuy; }
+    public void setLyDoHuy(String lyDoHuy) { this.lyDoHuy = lyDoHuy; }
+    public LocalDateTime getNgayYeuCauHuy() { return ngayYeuCauHuy; }
+    public void setNgayYeuCauHuy(LocalDateTime ngayYeuCauHuy) { this.ngayYeuCauHuy = ngayYeuCauHuy; }
+    public String getPhanHoiHuy() { return phanHoiHuy; }
+    public void setPhanHoiHuy(String phanHoiHuy) { this.phanHoiHuy = phanHoiHuy; }
+    public String getMaSanCu() { return maSanCu; }
+    public void setMaSanCu(String maSanCu) { this.maSanCu = maSanCu; }
+    public String getLyDoDoiSan() { return lyDoDoiSan; }
+    public void setLyDoDoiSan(String lyDoDoiSan) { this.lyDoDoiSan = lyDoDoiSan; }
+    public LocalDateTime getNgayDoiSan() { return ngayDoiSan; }
+    public void setNgayDoiSan(LocalDateTime ngayDoiSan) { this.ngayDoiSan = ngayDoiSan; }
     //endregion
 
 }

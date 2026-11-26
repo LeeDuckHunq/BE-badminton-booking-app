@@ -3,6 +3,7 @@ package com.example.alopoapi.service;
 import com.example.alopoapi.entity.CumSanEntity;
 import com.example.alopoapi.entity.PhieuDatSanEntity;
 import com.example.alopoapi.entity.SanEntity;
+import com.example.alopoapi.entity.ThongBaoEntity;
 import com.example.alopoapi.entity.UserEntity;
 import com.example.alopoapi.entity.nhom.NhomEntity;
 import com.example.alopoapi.entity.nhom.ThamGiaTranEntity;
@@ -15,6 +16,7 @@ import com.example.alopoapi.repository.ThamGiaTranRepo;
 import com.example.alopoapi.repository.TranDauRepo;
 import com.example.alopoapi.repository.UserRepo;
 import org.springframework.security.core.Authentication;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -86,6 +88,13 @@ public class TranDauService {
         this.userRepo = userRepo;
         this.nhomService = nhomService;
         this.managementService = managementService;
+    }
+
+    private ThongBaoService thongBao;
+
+    @Autowired(required = false)
+    void setThongBaoService(ThongBaoService thongBao) {
+        this.thongBao = thongBao;
     }
 
     // ── Chủ trận ─────────────────────────────────────────────────────────────
@@ -193,6 +202,7 @@ public class TranDauService {
         match.setTrangThai(TranDauEntity.DA_HUY);
         tranRepo.save(match);
         nhomService.systemMessage(match.getMaNhom(), displayName(me) + " đã huỷ trận \"" + match.getTieuDe() + "\" lúc " + when(match));
+        if (thongBao != null) thongBao.matchCancelled(match, displayName(me) + " đã huỷ trận lúc " + when(match) + ".");
         return detail(id, me);
     }
 
@@ -211,6 +221,15 @@ public class TranDauService {
         }
         request.setNgayCapNhat(LocalDateTime.now());
         thamGiaRepo.save(request);
+        if (thongBao != null) {
+            if (accept) {
+                thongBao.matchEvent(match, request.getUsername(), ThongBaoEntity.TRAN_DUOC_DUYET, "Bạn đã được nhận vào trận",
+                        "\"" + match.getTieuDe() + "\" lúc " + when(match) + ". Nhớ góp tiền sân cho chủ trận nhé!");
+            } else {
+                thongBao.matchEvent(match, request.getUsername(), ThongBaoEntity.TRAN_TU_CHOI, "Yêu cầu vào trận chưa được nhận",
+                        "Chủ trận \"" + match.getTieuDe() + "\" chưa nhận thêm người. Thử tìm trận khác nhé.");
+            }
+        }
         return detail(id, me);
     }
 
@@ -273,6 +292,10 @@ public class TranDauService {
         p.setNgayThamGia(LocalDateTime.now());
         p.setNgayCapNhat(LocalDateTime.now());
         thamGiaRepo.save(p);
+        if (thongBao != null && CHO_DUYET.equals(status)) {
+            thongBao.matchEvent(match, match.getChuTran(), ThongBaoEntity.TRAN_XIN_VAO, displayName(me) + " xin vào trận",
+                    "\"" + match.getTieuDe() + "\" lúc " + when(match) + (p.getLoiNhan() == null ? "" : ". Lời nhắn: " + p.getLoiNhan()));
+        }
         return detail(id, me);
     }
 
@@ -309,6 +332,11 @@ public class TranDauService {
         p.setThanhToan(CHO_XAC_NHAN);
         p.setNgayCapNhat(LocalDateTime.now());
         thamGiaRepo.save(p);
+        if (thongBao != null) {
+            TranDauEntity match = requireMatch(id);
+            thongBao.matchEvent(match, match.getChuTran(), ThongBaoEntity.TRAN_DA_CHUYEN_TIEN, displayName(me) + " báo đã chuyển tiền",
+                    "Trận \"" + match.getTieuDe() + "\": kiểm tra tài khoản rồi bấm Đã nhận nhé.");
+        }
         return detail(id, me);
     }
 
@@ -523,7 +551,13 @@ public class TranDauService {
             promoted.add(p);
             going++;
         }
-        if (!promoted.isEmpty()) thamGiaRepo.saveAll(promoted);
+        if (!promoted.isEmpty()) {
+            thamGiaRepo.saveAll(promoted);
+            if (thongBao != null) {
+                promoted.forEach(p -> thongBao.matchEvent(match, p.getUsername(), ThongBaoEntity.TRAN_LEN_DANH_SACH,
+                        "Bạn đã có chỗ trong trận", "Có người rời trận nên bạn được lên danh sách chơi \"" + match.getTieuDe() + "\" lúc " + when(match) + "."));
+            }
+        }
     }
 
     private long goingCount(String matchId) {

@@ -11,6 +11,7 @@ import com.example.alopoapi.repository.HoaDonRepo;
 import com.example.alopoapi.repository.PhieuDatSanRepo;
 import com.example.alopoapi.repository.SanRepo;
 import com.example.alopoapi.repository.UserRepo;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -47,6 +48,13 @@ public class ManagementService {
         this.userRepo = userRepo;
         this.hoaDonRepo = hoaDonRepo;
         this.phieuDatSanService = phieuDatSanService;
+    }
+
+    private ThongBaoService thongBao;
+
+    @Autowired(required = false)
+    void setThongBaoService(ThongBaoService thongBao) {
+        this.thongBao = thongBao;
     }
 
     // ── Đặt hộ khách ─────────────────────────────────────────────────────────
@@ -97,7 +105,7 @@ public class ManagementService {
         final UserEntity linked = customer;
         final String guestName = name;
         final String guestPhone = phone;
-        return phieuDatSanService.createWalkIn(booking, b -> {
+        PhieuDatSanEntity created = phieuDatSanService.createWalkIn(booking, b -> {
             b.setMaNguoiDung(linked == null ? null : linked.getUsername());
             b.setTenKhachHang(guestName);
             b.setSdtKhachHang(guestPhone);
@@ -105,6 +113,10 @@ public class ManagementService {
             b.setGhiChu(note);
             b.setNguoiTao(authentication.getName());
         });
+        if (thongBao != null && linked != null) {
+            thongBao.walkInLinked(created);
+        }
+        return created;
     }
 
     /**
@@ -211,6 +223,9 @@ public class ManagementService {
         result.put("courtCount", courts.size());
         result.put("bookingCount", bookings.size());
         result.put("pendingCount", pending);
+        result.put("cancelRequestCount", bookings.stream()
+                .filter(booking -> PhieuDatSanService.HUY_CHO_XU_LY.equals(booking.getYeuCauHuy()) && !"DA_HUY".equals(booking.getTrangThai()))
+                .count());
         result.put("todayBookingCount", today);
         result.put("revenue", revenue);
         if (isAdmin(authentication)) {
@@ -354,8 +369,84 @@ public class ManagementService {
         PhieuDatSanEntity booking = bookingRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn đặt"));
         requireCourt(booking.getMaSan(), authentication);
+        String old = booking.getTrangThai();
         booking.setTrangThai(normalized);
-        return bookingRepo.save(booking);
+        if ("DA_HUY".equals(normalized) && PhieuDatSanService.HUY_CHO_XU_LY.equals(booking.getYeuCauHuy())) {
+            booking.setYeuCauHuy(PhieuDatSanService.HUY_DONG_Y);
+        }
+        PhieuDatSanEntity saved = bookingRepo.save(booking);
+        if (thongBao != null) {
+            thongBao.bookingStatusChanged(saved, old);
+        }
+        return saved;
+    }
+
+    /**
+     * Chủ sân xử lý yêu cầu huỷ của khách: đồng ý → huỷ đơn, nhả khung giờ; từ chối → giữ đơn, ghi lý do.
+     */
+    public PhieuDatSanEntity handleCancelRequest(String id, boolean accept, String note, Authentication authentication) {
+        PhieuDatSanEntity booking = bookingRepo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn đặt"));
+        requireCourt(booking.getMaSan(), authentication);
+        if (!PhieuDatSanService.HUY_CHO_XU_LY.equals(booking.getYeuCauHuy())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn này không có yêu cầu huỷ đang chờ");
+        }
+        String text = blankToNull(note);
+        if (text != null && text.length() > 300) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ghi chú tối đa 300 ký tự");
+        }
+        if (!accept && text == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng ghi lý do từ chối để khách hiểu");
+        }
+        booking.setPhanHoiHuy(text);
+        if (accept) {
+            String old = booking.getTrangThai();
+            booking.setYeuCauHuy(PhieuDatSanService.HUY_DONG_Y);
+            booking.setTrangThai("DA_HUY");
+            PhieuDatSanEntity saved = bookingRepo.save(booking);
+            if (thongBao != null) thongBao.bookingStatusChanged(saved, old);
+            return saved;
+        }
+        booking.setYeuCauHuy(PhieuDatSanService.HUY_TU_CHOI);
+        PhieuDatSanEntity saved = bookingRepo.save(booking);
+        if (thongBao != null) {
+            thongBao.notify(saved.getMaNguoiDung(), com.example.alopoapi.entity.ThongBaoEntity.HUY_BI_TU_CHOI,
+                    "Chủ sân chưa đồng ý huỷ", thongBao.describe(saved) + ". Chủ sân nhắn: " + text,
+                    com.example.alopoapi.entity.ThongBaoEntity.BOOKING, saved.getMaPhieuDat());
+        }
+        return saved;
+    }
+
+    /**
+     * Đổi sân cho một lượt đặt (sân cũ có sự cố): sân mới phải cùng cụm, còn trống đúng khung giờ.
+     * Giờ chơi và tiền giữ nguyên; khách và người chơi trong trận được báo.
+     */
+    public PhieuDatSanEntity changeCourt(String id, String newCourtId, String reason, Authentication authentication) {
+        PhieuDatSanEntity booking = bookingRepo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn đặt"));
+        SanEntity from = requireCourt(booking.getMaSan(), authentication);
+        SanEntity to = requireCourt(required(newCourtId, "Vui lòng chọn sân mới"), authentication);
+        String why = required(reason, "Vui lòng ghi lý do đổi sân");
+        if (why.length() > 200) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Lý do tối đa 200 ký tự");
+        }
+        if (from.getMaSan().equals(to.getMaSan())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sân mới phải khác sân hiện tại");
+        }
+        if (from.getMaCumSan() == null || !from.getMaCumSan().equals(to.getMaCumSan())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ đổi được sang sân trong cùng cụm sân");
+        }
+        if (!List.of("CHO_XAC_NHAN", "DA_XAC_NHAN").contains(booking.getTrangThai())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ đổi sân cho đơn đang chờ hoặc đã xác nhận");
+        }
+        if (booking.getKetThuc() == null || !booking.getKetThuc().isAfter(LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Lượt chơi đã kết thúc");
+        }
+        PhieuDatSanEntity saved = phieuDatSanService.moveCourt(booking, to, why);
+        if (thongBao != null) {
+            thongBao.courtChanged(saved, from, to, why);
+        }
+        return saved;
     }
 
     /** Doanh thu và số đơn theo ngày lập đơn trong {@code days} ngày gần nhất (không tính đơn đã huỷ). */
