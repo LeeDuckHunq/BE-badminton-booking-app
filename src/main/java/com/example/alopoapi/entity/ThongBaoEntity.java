@@ -36,12 +36,15 @@ public class ThongBaoEntity {
     public static final String TRAN_LEN_DANH_SACH = "TRAN_LEN_DANH_SACH";
     public static final String TRAN_DA_CHUYEN_TIEN = "TRAN_DA_CHUYEN_TIEN";
     public static final String DANH_GIA_PHAN_HOI = "DANH_GIA_PHAN_HOI";
+    public static final String KET_BAN_LOI_MOI = "KET_BAN_LOI_MOI";
+    public static final String KET_BAN_DONG_Y = "KET_BAN_DONG_Y";
 
     // Đối tượng để client mở đúng màn hình khi bấm vào thông báo
     public static final String BOOKING = "BOOKING";
     public static final String CHAT = "CHAT";
     public static final String MATCH = "MATCH";
     public static final String REVIEW = "REVIEW";
+    public static final String FRIEND = "FRIEND";
 
     @Id
     private String maThongBao;

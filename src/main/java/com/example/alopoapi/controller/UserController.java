@@ -1,6 +1,7 @@
 package com.example.alopoapi.controller;
 
 import com.example.alopoapi.security.AccessGuard;
+import com.example.alopoapi.service.BanBeService;
 import com.example.alopoapi.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -15,7 +16,10 @@ public class UserController {
 
     private final UserService userService;
 
-    public UserController(UserService userService) {
+    private final BanBeService banBeService;
+
+    public UserController(UserService userService, BanBeService banBeService) {
+        this.banBeService = banBeService;
         this.userService = userService;
     }
 
@@ -31,9 +35,13 @@ public class UserController {
         return ResponseEntity.ok(userService.requireUser(username));
     }
 
-    /** Danh bạ cho tính năng chat (chỉ username + họ tên, yêu cầu đăng nhập). */
+    /**
+     * Danh bạ chat: admin thấy tất cả; người khác chỉ thấy bạn bè và người đã từng nhắn
+     * (không còn liệt kê toàn bộ người dùng — muốn nhắn người mới thì kết bạn qua /ban-be).
+     */
     @GetMapping("/get-all-user")
-    public ResponseEntity<?> getAllUser() {
-        return ResponseEntity.ok(userService.getAllUser());
+    public ResponseEntity<?> getAllUser(Authentication authentication) {
+        boolean admin = authentication.getAuthorities().stream().anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+        return ResponseEntity.ok(admin ? userService.getAllUser() : banBeService.contacts(authentication.getName()));
     }
 }

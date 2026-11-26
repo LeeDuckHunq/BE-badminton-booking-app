@@ -134,6 +134,11 @@ await say(owner, 'Chào Tuấn Anh! Sân 2 ngày mai khung 08:00 bên mình đã
 await say(ta, 'Dạ em cảm ơn anh Hoàng ạ! Em vừa tải bill chuyển khoản lên hệ thống, anh duyệt đơn giúp em nhé.');
 await say(owner, 'Ok bạn, mình thấy hoá đơn rồi. Mình duyệt ngay đây!');
 await say(ta, 'Vâng em cảm ơn anh nhiều! Hẹn gặp anh ngày mai ạ 🏸');
+// Bạn bè: khách chỉ mở chat mới với bạn bè (hoặc chủ sân, người cùng nhóm / cùng trận).
+await call('POST', '/ban-be/loi-moi', { token: mk, body: { username: 'tuananh' } });
+await call('POST', '/ban-be/minhkhang/dong-y', { token: ta });
+await call('POST', '/ban-be/loi-moi', { token: ml, body: { username: 'tuananh' } });
+await call('POST', '/ban-be/mailinh/dong-y', { token: ta });
 const room2 = await call('POST', '/chat/get-or-create-room', { token: ta, body: { username1: 'tuananh', username2: 'minhkhang' } });
 await call('POST', '/chat/send-message', { token: mk, body: { maPhongChat: room2, noiDung: 'Tối thứ 5 này đánh đôi không ông?' } });
 
@@ -153,6 +158,8 @@ for (const u of [
 const qh = await login('quochuy', 'secret12');
 const tt = await login('thanhtruc', 'secret12');
 const dm = await login('ducminh', 'secret12');
+await call('POST', '/ban-be/loi-moi', { token: qh, body: { username: 'tuananh' } }); // lời mời đang chờ tuananh chấp nhận
+await call('POST', '/ban-be/loi-moi', { token: ta, body: { username: 'thanhtruc' } });
 const pause = () => new Promise((r) => setTimeout(r, 30));
 
 const g1 = await call('POST', '/nhom', { token: mk, body: { tenNhom: 'CLB Cầu Lông Quận 1 Chill', moTa: 'Đánh đôi giao lưu tối thứ 3, 5, 7 ở Quận 1. Vui vẻ là chính, không cay cú 😄', khuVuc: 'Quận 1, TP.HCM', trinhDo: 'TB', congKhai: true, mau: 0 } });

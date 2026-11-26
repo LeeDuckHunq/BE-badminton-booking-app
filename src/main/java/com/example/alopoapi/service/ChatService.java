@@ -47,6 +47,12 @@ public class ChatService {
     }
 
     private ThongBaoService thongBao;
+    private BanBeService banBe;
+
+    @Autowired(required = false)
+    void setBanBeService(BanBeService banBe) {
+        this.banBe = banBe;
+    }
 
     @Autowired(required = false)
     void setThongBaoService(ThongBaoService thongBao) {
@@ -78,6 +84,11 @@ public class ChatService {
 
         if (room != null) {
             return room;
+        }
+
+        // Cuộc trò chuyện mới: phải là bạn bè, hoặc khách ↔ chủ sân / quản trị, hoặc cùng nhóm / cùng trận.
+        if (banBe != null && !banBe.canStartChat(currentUsername, other)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Hãy kết bạn với người này trước khi nhắn tin");
         }
 
         String maPhongChat = "PC_" + UUID.randomUUID();
