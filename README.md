@@ -163,6 +163,10 @@ Gửi token qua header `Authorization: Bearer <token>` (lấy từ `POST /login`
 | GET / POST | `/nhom/cua-toi`, `/nhom`, `/nhom/{id}`, `/nhom/tham-gia-bang-ma` | Nhóm của tôi, tạo nhóm, chi tiết, vào bằng mã mời |
 | POST / DELETE | `/nhom/{id}/tham-gia`, `/nhom/{id}/roi`, `/nhom/{id}/duyet/{u}`, `/nhom/{id}/vai-tro/{u}`, `/nhom/{id}/thanh-vien/{u}` | Xin vào, rời, duyệt, phân quyền, mời ra |
 | GET / POST | `/nhom/{id}/tin-nhan`, `/nhom/{id}/tran` | Chat nhóm, trận của nhóm |
+| POST / DELETE | `/phieu-dat-san/{id}/yeu-cau-huy` | Xin huỷ lượt đã xác nhận (body `{lyDo}`, trước giờ chơi ≥ 30 phút; tự nhắn cho chủ sân, trả về liên hệ Zalo) / rút yêu cầu |
+| GET | `/thong-bao`, `/thong-bao/chua-doc` | Thông báo của tôi (60 mới nhất + số chưa đọc) |
+| GET | `/thong-bao/chua-gui` | Thông báo chưa đẩy lên điện thoại (app Android gọi khi ở nền; gọi xong coi như đã gửi) |
+| POST | `/thong-bao/{id}/da-doc`, `/thong-bao/da-doc-het` | Đánh dấu đã đọc |
 
 **Quản lý (`/management/**`, chủ sân hoặc admin)**
 
@@ -173,11 +177,19 @@ Gửi token qua header `Authorization: Bearer <token>` (lấy từ `POST /login`
 | POST | `/management/courts/{id}/copy-pricing` | Áp dụng bảng giá của sân cho các sân khác cùng cụm |
 | GET / POST | `/management/bookings` | Danh sách đơn, đặt lịch hộ khách |
 | GET / PATCH | `/management/bookings/{id}`, `/management/bookings/{id}/status` | Chi tiết, đổi trạng thái đơn |
+| PATCH | `/management/bookings/{id}/court` | Đổi sang sân khác cùng cụm còn trống (body `{maSan, lyDo}`; giữ giờ và giá, báo khách + người chơi trong trận) |
+| POST | `/management/bookings/{id}/cancel-request` | Xử lý yêu cầu huỷ của khách (body `{accept, ghiChu}`; đồng ý = huỷ đơn, nhả khung giờ) |
 | GET | `/management/timeline?date=&venue=` | Lịch sân theo ngày |
 | GET | `/management/customers?q=` | Tìm khách để đặt hộ |
 | GET / PATCH | `/management/reviews`, `/management/reviews/{id}/reply` | Đánh giá, trả lời |
 | GET | `/management/matches?venue=` | Trận ghép tại cụm sân của mình |
 | * | `/management/admin/**` | Chỉ admin: tài khoản, phân quyền, ẩn đánh giá, danh sách / khoá nhóm |
+
+### Thông báo
+
+Máy chủ tạo thông báo khi: chủ sân xác nhận / huỷ / hoàn thành đơn, đổi sân, đặt hộ có gắn tài khoản, khách gửi bill (báo chủ sân), khách xin huỷ / rút yêu cầu, chủ sân từ chối huỷ, tin nhắn mới (gộp theo người gửi), ghép trận (xin vào, được duyệt / từ chối, huỷ trận, lên danh sách chờ, báo đã chuyển tiền) và chủ sân trả lời đánh giá. Đơn bị huỷ thì trận ghép đang mở gắn với đơn cũng huỷ theo.
+
+Web và dashboard hỏi `/thong-bao` mỗi 20 giây (kèm thông báo trình duyệt khi tab ẩn). App Android: khi mở app hỏi mỗi 20 giây; khi app ở nền, WorkManager gọi `/thong-bao/chua-gui` (khoảng 1 phút/lần trong 30 phút đầu, sau đó 15 phút/lần) và hiện thông báo hệ thống — không cần Firebase.
 
 ## 8. Cấu trúc thư mục
 
